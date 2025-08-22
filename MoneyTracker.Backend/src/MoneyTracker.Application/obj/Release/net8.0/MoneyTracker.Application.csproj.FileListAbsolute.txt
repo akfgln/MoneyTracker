@@ -1,0 +1,15 @@
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/MoneyTracker.Application.csproj.AssemblyReference.cache
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/MoneyTracker.Application.GeneratedMSBuildEditorConfig.editorconfig
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/MoneyTracker.Application.AssemblyInfoInputs.cache
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/MoneyTracker.Application.AssemblyInfo.cs
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/MoneyTracker.Application.csproj.CoreCompileInputs.cache
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/bin/Release/net8.0/MoneyTracker.Application.deps.json
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/bin/Release/net8.0/MoneyTracker.Application.dll
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/bin/Release/net8.0/MoneyTracker.Application.pdb
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/bin/Release/net8.0/MoneyTracker.Domain.dll
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/bin/Release/net8.0/MoneyTracker.Domain.pdb
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/MoneyTra.92AA2ACB.Up2Date
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/MoneyTracker.Application.dll
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/refint/MoneyTracker.Application.dll
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/MoneyTracker.Application.pdb
+/workspace/MoneyTracker.Backend/src/MoneyTracker.Application/obj/Release/net8.0/ref/MoneyTracker.Application.dll

@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: moneytracker-sqlserver
+    environment:
+      SA_PASSWORD: YourSqlServerPassword123!
+      ACCEPT_EULA: Y
+      MSSQL_PID: Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./docker/sqlserver/init:/var/opt/mssql/scripts
+    restart: unless-stopped
+    networks:
+      - moneytracker-network
+
+  sqlserver-web:
+    image: adminer:latest
+    container_name: moneytracker-adminer
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: sqlserver
+    depends_on:
+      - sqlserver
+    networks:
+      - moneytracker-network
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  moneytracker-network:
+    driver: bridge

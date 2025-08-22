@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: moneytracker-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: YourMySqlPassword123!
+      MYSQL_DATABASE: MoneyTrackerDb_Dev
+      MYSQL_USER: moneytracker
+      MYSQL_PASSWORD: YourMySqlPassword123!
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - moneytracker-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: moneytracker-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: YourMySqlPassword123!
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - moneytracker-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  moneytracker-network:
+    driver: bridge

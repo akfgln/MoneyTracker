@@ -1,0 +1,800 @@
+.dashboard-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+  background-color: #f5f7fa;
+  position: relative;
+}
+
+// Header Section
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  background: white;
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  border-left: 4px solid #1976D2;
+  
+  .header-content {
+    flex: 1;
+    
+    h1 {
+      margin: 0 0 8px 0;
+      color: #1a1a1a;
+      font-weight: 600;
+      font-size: 32px;
+      line-height: 1.2;
+    }
+    
+    .header-subtitle {
+      margin: 0;
+      color: #666;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+  }
+  
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    
+    .year-selector {
+      min-width: 140px;
+    }
+  }
+}
+
+// Summary Cards
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+  
+  .summary-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    
+    .mat-mdc-card-header {
+      padding: 20px 20px 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      
+      .mat-mdc-card-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+      }
+      
+      .card-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+        opacity: 0.7;
+      }
+    }
+    
+    .mat-mdc-card-content {
+      padding: 16px 20px 20px 20px;
+    }
+    
+    // Balance card specific styles
+    &.balance-card {
+      border-top: 4px solid #1976D2;
+      
+      .card-icon {
+        color: #1976D2;
+      }
+      
+      .balance-amount {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        
+        &.positive {
+          color: #4CAF50;
+        }
+        
+        &.negative {
+          color: #F44336;
+        }
+      }
+      
+      .balance-change {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          
+          &.positive {
+            color: #4CAF50;
+          }
+          
+          &.negative {
+            color: #F44336;
+          }
+        }
+        
+        span {
+          &.positive {
+            color: #4CAF50;
+          }
+          
+          &.negative {
+            color: #F44336;
+          }
+        }
+      }
+    }
+    
+    // Income card
+    &.income-card {
+      border-top: 4px solid #4CAF50;
+      
+      .card-icon.income {
+        color: #4CAF50;
+      }
+    }
+    
+    // Expense card
+    &.expense-card {
+      border-top: 4px solid #F44336;
+      
+      .card-icon.expense {
+        color: #F44336;
+      }
+    }
+    
+    // VAT card
+    &.vat-card {
+      border-top: 4px solid #FF9800;
+      
+      .card-icon {
+        color: #FF9800;
+      }
+      
+      .vat-summary {
+        .vat-line {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+          
+          &:last-child {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+          }
+          
+          .amount {
+            font-weight: 600;
+            
+            &.deductible {
+              color: #4CAF50;
+            }
+          }
+        }
+      }
+    }
+    
+    .amount {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      
+      &.income {
+        color: #4CAF50;
+      }
+      
+      &.expense {
+        color: #F44336;
+      }
+    }
+    
+    .comparison {
+      font-size: 13px;
+      
+      .positive {
+        color: #4CAF50;
+      }
+      
+      .negative {
+        color: #F44336;
+      }
+    }
+  }
+}
+
+// Charts Row
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+  
+  .chart-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    
+    .mat-mdc-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 24px 0 24px;
+      
+      .mat-mdc-card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+      }
+      
+      .chart-controls {
+        .mat-button-toggle-group {
+          height: 36px;
+          
+          .mat-button-toggle {
+            font-size: 12px;
+            padding: 0 16px;
+            height: 36px;
+            line-height: 36px;
+          }
+        }
+      }
+    }
+    
+    .mat-mdc-card-content {
+      padding: 20px 24px 24px 24px;
+      
+      .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        
+        canvas {
+          max-height: 300px;
+        }
+      }
+    }
+    
+    // Category chart specific
+    &.category-chart {
+      .category-legend {
+        margin-top: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 0;
+          border-bottom: 1px solid #f0f0f0;
+          
+          &:last-child {
+            border-bottom: none;
+          }
+          
+          .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+          }
+          
+          .legend-label {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+          }
+          
+          .legend-amount {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+          }
+          
+          .legend-percentage {
+            font-size: 12px;
+            color: #666;
+            margin-left: 4px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Bottom Row
+.bottom-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+  
+  .recent-transactions-card,
+  .quick-actions-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    
+    .mat-mdc-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 24px 0 24px;
+      
+      .mat-mdc-card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+      }
+    }
+    
+    .mat-mdc-card-content {
+      padding: 20px 24px 24px 24px;
+    }
+  }
+  
+  .recent-transactions-card {
+    .mat-mdc-list {
+      padding: 0;
+      
+      .mat-mdc-list-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        .mat-mdc-list-item-icon {
+          margin-right: 16px;
+        }
+        
+        .transaction-description {
+          font-weight: 500;
+          color: #1a1a1a;
+        }
+        
+        .transaction-merchant {
+          color: #666;
+          font-size: 12px;
+        }
+        
+        .transaction-date {
+          color: #999;
+          font-size: 11px;
+        }
+        
+        .transaction-amount {
+          position: absolute;
+          right: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          font-weight: 600;
+          
+          &.income {
+            color: #4CAF50;
+          }
+          
+          &.expense {
+            color: #F44336;
+          }
+        }
+      }
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+      
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+      
+      p {
+        margin: 0;
+        font-size: 14px;
+      }
+    }
+  }
+  
+  .quick-actions-card {
+    .quick-action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      
+      button {
+        height: 56px;
+        font-size: 14px;
+        border-radius: 8px;
+        
+        mat-icon {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}
+
+// Budget Section
+.budget-section {
+  .budget-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    
+    .mat-mdc-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 24px 0 24px;
+      
+      .mat-mdc-card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0;
+      }
+    }
+    
+    .mat-mdc-card-content {
+      padding: 20px 24px 24px 24px;
+      
+      .budget-list {
+        .budget-item {
+          margin-bottom: 24px;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            
+            .budget-name {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-weight: 500;
+              color: #1a1a1a;
+              
+              mat-icon {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+              }
+            }
+            
+            .budget-amount {
+              font-size: 14px;
+              color: #666;
+              font-weight: 500;
+            }
+          }
+          
+          .budget-progress {
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+          }
+          
+          .budget-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            
+            .budget-percentage {
+              color: #666;
+            }
+            
+            .budget-remaining {
+              color: #4CAF50;
+            }
+            
+            .budget-overrun {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              color: #F44336;
+              
+              mat-icon {
+                font-size: 14px;
+                width: 14px;
+                height: 14px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Loading Overlay
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  border-radius: 12px;
+  
+  .loading-spinner {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    animation: spin 2s linear infinite;
+    color: #1976D2;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .dashboard-container {
+    padding: 16px;
+  }
+  
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 12px;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 20px;
+    
+    .header-content h1 {
+      font-size: 28px;
+    }
+    
+    .header-controls {
+      justify-content: space-between;
+    }
+  }
+  
+  .summary-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .charts-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    
+    .chart-card {
+      .mat-mdc-card-content .chart-container {
+        height: 250px;
+      }
+    }
+  }
+  
+  .bottom-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .quick-actions-card .quick-action-grid {
+    grid-template-columns: 1fr;
+    
+    button {
+      height: 48px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 8px;
+  }
+  
+  .dashboard-header {
+    padding: 16px;
+    
+    .header-content h1 {
+      font-size: 24px;
+    }
+    
+    .header-controls {
+      .year-selector {
+        min-width: 120px;
+      }
+    }
+  }
+  
+  .summary-row .summary-card {
+    .mat-mdc-card-header {
+      padding: 16px 16px 0 16px;
+    }
+    
+    .mat-mdc-card-content {
+      padding: 12px 16px 16px 16px;
+    }
+    
+    &.balance-card .balance-amount {
+      font-size: 28px;
+    }
+    
+    .amount {
+      font-size: 20px;
+    }
+  }
+  
+  .charts-row .chart-card {
+    .mat-mdc-card-header {
+      padding: 16px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    
+    .mat-mdc-card-content {
+      padding: 12px 16px 16px 16px;
+      
+      .chart-container {
+        height: 200px;
+      }
+    }
+  }
+}
+
+// Dark Theme Support
+@media (prefers-color-scheme: dark) {
+  .dashboard-container {
+    background-color: #121212;
+  }
+  
+  .dashboard-header,
+  .summary-row .summary-card,
+  .charts-row .chart-card,
+  .bottom-row > *,
+  .budget-section .budget-card {
+    background: #1e1e1e;
+    color: #fff;
+  }
+  
+  .dashboard-header {
+    .header-content h1 {
+      color: #fff;
+    }
+    
+    .header-subtitle {
+      color: #ccc;
+    }
+  }
+  
+  .summary-row .summary-card {
+    .mat-mdc-card-header .mat-mdc-card-title {
+      color: #ccc;
+    }
+    
+    .comparison {
+      color: #ccc;
+    }
+  }
+  
+  .recent-transactions-card {
+    .mat-mdc-list .mat-mdc-list-item {
+      border-color: #333;
+      
+      .transaction-description {
+        color: #fff;
+      }
+      
+      .transaction-merchant {
+        color: #ccc;
+      }
+      
+      .transaction-date {
+        color: #999;
+      }
+    }
+    
+    .no-data {
+      color: #ccc;
+    }
+  }
+  
+  .budget-section .budget-card {
+    .budget-list .budget-item {
+      .budget-header .budget-name {
+        color: #fff;
+      }
+      
+      .budget-info .budget-percentage {
+        color: #ccc;
+      }
+    }
+  }
+}
+
+// High Contrast Mode
+@media (prefers-contrast: high) {
+  .summary-row .summary-card,
+  .charts-row .chart-card,
+  .bottom-row > *,
+  .budget-section .budget-card {
+    border: 2px solid;
+    box-shadow: none;
+  }
+}
+
+// Print Styles
+@media print {
+  .dashboard-container {
+    padding: 0;
+    background: white;
+    
+    .loading-overlay {
+      display: none;
+    }
+    
+    .dashboard-header .header-controls {
+      display: none;
+    }
+    
+    .quick-actions-card {
+      display: none;
+    }
+  }
+}

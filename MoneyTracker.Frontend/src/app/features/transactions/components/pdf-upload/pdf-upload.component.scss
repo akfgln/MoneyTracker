@@ -1,0 +1,354 @@
+.pdf-upload-card {
+  max-width: 800px;
+  margin: 0 auto;
+  
+  .mat-mdc-card-header {
+    padding-bottom: 16px;
+  }
+}
+
+.drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+  margin-bottom: 24px;
+  
+  &:hover {
+    border-color: #2196f3;
+    background-color: #f0f8ff;
+  }
+  
+  &.dragover {
+    border-color: #4caf50;
+    background-color: #f1f8e9;
+    transform: scale(1.02);
+  }
+  
+  &.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  
+  .drop-zone-content {
+    .upload-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+    
+    h3 {
+      margin: 0 0 8px 0;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    p {
+      margin: 0 0 20px 0;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .upload-type-toggle {
+      .mat-button-toggle {
+        border-radius: 4px !important;
+        
+        &:first-of-type {
+          border-top-left-radius: 4px !important;
+          border-bottom-left-radius: 4px !important;
+        }
+        
+        &:last-of-type {
+          border-top-right-radius: 4px !important;
+          border-bottom-right-radius: 4px !important;
+        }
+      }
+    }
+  }
+}
+
+.upload-queue {
+  margin-top: 24px;
+  
+  h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .file-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background-color: #fff;
+    transition: all 0.2s ease;
+    position: relative;
+    
+    &:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .file-info {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+      
+      .file-icon {
+        color: #f44336;
+        margin-right: 12px;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+      
+      .file-details {
+        flex: 1;
+        min-width: 0;
+        
+        .file-name {
+          font-weight: 500;
+          color: #333;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          margin-bottom: 4px;
+        }
+        
+        .file-meta {
+          font-size: 12px;
+          color: #666;
+          
+          .status-pending {
+            color: #ff9800;
+          }
+          
+          .status-uploading {
+            color: #2196f3;
+          }
+          
+          .status-completed {
+            color: #4caf50;
+          }
+          
+          .status-error {
+            color: #f44336;
+          }
+        }
+      }
+    }
+    
+    .upload-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 0 0 6px 6px;
+    }
+    
+    .error-message {
+      position: absolute;
+      bottom: -24px;
+      left: 52px;
+      right: 52px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #f44336;
+      background-color: #ffebee;
+      padding: 4px 8px;
+      border-radius: 4px;
+      
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+    
+    .file-actions {
+      display: flex;
+      gap: 4px;
+      margin-left: 12px;
+      
+      .mat-mdc-icon-button {
+        width: 32px;
+        height: 32px;
+        
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+    
+    // Add spacing for error messages
+    &:has(.error-message) {
+      margin-bottom: 32px;
+    }
+  }
+}
+
+.upload-summary {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  
+  mat-chip-set {
+    mat-chip {
+      margin-right: 8px;
+      
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+.mat-mdc-card-actions {
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  
+  button {
+    margin-right: 12px;
+    
+    &:last-child {
+      margin-right: 0;
+    }
+    
+    mat-icon {
+      margin-right: 4px;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  .pdf-upload-card {
+    margin: 16px;
+    
+    .drop-zone {
+      padding: 24px 16px;
+      
+      .drop-zone-content {
+        .upload-icon {
+          font-size: 36px;
+          width: 36px;
+          height: 36px;
+        }
+        
+        h3 {
+          font-size: 18px;
+        }
+        
+        p {
+          font-size: 13px;
+        }
+      }
+    }
+    
+    .upload-queue {
+      .file-item {
+        padding: 8px 12px;
+        
+        .file-info {
+          .file-icon {
+            margin-right: 8px;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+          }
+        }
+        
+        .file-actions {
+          .mat-mdc-icon-button {
+            width: 28px;
+            height: 28px;
+            
+            mat-icon {
+              font-size: 16px;
+              width: 16px;
+              height: 16px;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .mat-mdc-card-actions {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    
+    button {
+      margin: 4px 0;
+      width: 100%;
+      
+      &:first-child {
+        margin-top: 0;
+      }
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .drop-zone {
+    background-color: #303030;
+    border-color: #555;
+    
+    &:hover {
+      background-color: #1e3a5f;
+      border-color: #2196f3;
+    }
+    
+    &.dragover {
+      background-color: #2e4b37;
+      border-color: #4caf50;
+    }
+    
+    .drop-zone-content {
+      h3 {
+        color: #fff;
+      }
+      
+      p {
+        color: #ccc;
+      }
+    }
+  }
+  
+  .upload-queue {
+    .file-item {
+      background-color: #424242;
+      border-color: #555;
+      
+      &:hover {
+        background-color: #4a4a4a;
+      }
+      
+      .file-info .file-details .file-name {
+        color: #fff;
+      }
+    }
+  }
+}
