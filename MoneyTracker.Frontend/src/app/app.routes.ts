@@ -1,88 +1,43 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
-import { ReportsComponent } from './features/reports/reports.component';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  { 
+    path: '', 
+    redirectTo: '/dashboard', 
+    pathMatch: 'full' 
+  },
   {
-    path: '',
-    redirectTo: '/dashboard',
-    pathMatch: 'full'
+    path: 'auth',
+    loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },
   {
     path: 'dashboard',
-    component: DashboardComponent,
-    title: 'Dashboard - Finanzübersicht',
-    data: { 
-      title: 'Dashboard',
-      description: 'Hauptübersicht mit Einnahmen, Ausgaben und Gewinn'
-    }
-  },
-  {
-    path: 'reports',
-    component: ReportsComponent,
-    title: 'Berichte - Finanzberichte',
-    data: { 
-      title: 'Berichte',
-      description: 'Generierung und Verwaltung von Finanzberichten'
-    }
+    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    canActivate: [AuthGuard]
   },
   {
     path: 'transactions',
-    loadComponent: () => import('./features/transactions/transactions.component')
-      .then(c => c.TransactionsComponent),
-    title: 'Transaktionen - Buchungsverwaltung',
-    data: { 
-      title: 'Transaktionen',
-      description: 'Verwaltung aller Ein- und Ausgaben'
-    }
+    loadChildren: () => import('./features/transactions/transactions.routes').then(m => m.transactionRoutes),
+    canActivate: [AuthGuard]
   },
   {
     path: 'categories',
-    loadComponent: () => import('./features/categories/categories.component')
-      .then(c => c.CategoriesComponent),
-    title: 'Kategorien - Ausgabenkategorien',
-    data: { 
-      title: 'Kategorien',
-      description: 'Verwaltung der Ausgaben- und Einnahmenkategorien'
-    }
+    loadChildren: () => import('./features/categories/categories.routes').then(m => m.categoryRoutes),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'reports',
+    loadChildren: () => import('./features/reports/reports.routes').then(m => m.reportRoutes),
+    canActivate: [AuthGuard]
   },
   {
     path: 'settings',
-    loadComponent: () => import('./features/settings/settings.component')
-      .then(c => c.SettingsComponent),
-    title: 'Einstellungen - Systemkonfiguration',
-    data: { 
-      title: 'Einstellungen',
-      description: 'System- und Benutzereinstellungen'
-    }
+    loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent),
+    canActivate: [AuthGuard]
   },
-  {
-    path: 'help',
-    loadComponent: () => import('./features/help/help.component')
-      .then(c => c.HelpComponent),
-    title: 'Hilfe - Unterstützung',
-    data: { 
-      title: 'Hilfe',
-      description: 'Dokumentation und Support'
-    }
-  },
-  {
-    path: '**',
-    redirectTo: '/dashboard'
+  { 
+    path: '**', 
+    redirectTo: '/dashboard' 
   }
 ];
-
-// Route Guard for authentication (if needed)
-export const authGuard = () => {
-  // Implement authentication logic here
-  return true;
-};
-
-// Route resolver for loading common data
-export const commonDataResolver = () => {
-  return {
-    currentYear: new Date().getFullYear(),
-    currentMonth: new Date().getMonth() + 1,
-    germanLocale: 'de-DE'
-  };
-};

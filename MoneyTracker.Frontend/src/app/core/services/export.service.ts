@@ -17,6 +17,7 @@ export interface ExportData {
   title?: string;
   subtitle?: string;
   metadata?: { [key: string]: any };
+  summary?: { [key: string]: any };
 }
 
 export interface ExportOptions {
@@ -46,6 +47,7 @@ export class ExportService {
     options?: {
       germanLocale?: boolean;
       includeMetadata?: boolean;
+      dateFormat?: string;
     }
   ): Promise<void> {
     try {
@@ -315,7 +317,7 @@ export class ExportService {
           3: { halign: 'right' }
         },
         margin: { left: margin, right: margin },
-        didDrawPage: (data) => {
+        didDrawPage: (data: any) => {
           // Add page numbers
           const pageNumber = (pdf as any).internal.getNumberOfPages();
           const currentPage = (pdf as any).internal.getCurrentPageInfo().pageNumber;

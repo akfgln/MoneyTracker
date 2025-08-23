@@ -7,14 +7,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatTreeModule, FlatTreeControl } from '@angular/material/tree';
-import { MatIconButtonModule } from '@angular/material/icon';
+import { MatTreeModule } from '@angular/material/tree';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { Observable, Subject, BehaviorSubject, combineLatest } from 'rxjs';
 import { takeUntil, map, startWith } from 'rxjs/operators';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 import { TransactionService, Category } from '../../services/transaction.service';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { FlatTreeControl } from '@angular/cdk/tree';
 
 interface FlatCategory {
   id: string;
@@ -292,7 +293,7 @@ interface FlatCategory {
     MatButtonModule,
     MatMenuModule,
     MatTreeModule,
-    MatIconButtonModule,
+    MatCheckbox,
     MatTooltipModule,
     MatChipsModule
   ],
@@ -488,7 +489,7 @@ export class CategorySelectComponent implements OnInit, OnDestroy {
   }
   
   private emitSelectionChange(): void {
-    const value = this.allowMultiple ? this.selectedCategories : this.selectedCategories[0] || null;
+    const value = this.allowMultiple ? this.selectedCategories : this.selectedCategories[0] || '';
     this.selectionChange.emit(value);
   }
   

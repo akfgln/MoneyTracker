@@ -1,201 +1,133 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration } from 'chart.js';
+import { MatButtonModule } from '@angular/material/button';
 import { TranslateModule } from '@ngx-translate/core';
-import { ChartConfigService } from '../../core/services/chart-config.service';
-import { ReportService } from '../../core/services/report.service';
-import { TestDataService } from '../../services/test-data.service';
+import { Observable } from 'rxjs';
+
+import { AuthService } from '../../core/services/auth.service';
+import { User } from '../../core/models/user.model';
+import { GermanCurrencyPipe } from '../../shared/pipes/german-currency.pipe';
+import { GermanDatePipe } from '../../shared/pipes/german-date.pipe';
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatIconModule,
+    MatButtonModule,
+    TranslateModule,
+    GermanCurrencyPipe,
+    GermanDatePipe
+  ],
   template: `
     <div class="dashboard-container">
-      <!-- Summary Cards -->
-      <mat-grid-list cols="4" rowHeight="200px" gutterSize="16px">
-        <mat-grid-tile>
-          <mat-card class="summary-card income-card">
-            <mat-card-header>
-              <mat-icon mat-card-avatar>trending_up</mat-icon>
-              <mat-card-title>{{ 'dashboard.totalIncome' | translate }}</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="amount">{{ totalIncome | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</div>
-              <div class="change positive">+5.2% vs letzter Monat</div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        
-        <mat-grid-tile>
-          <mat-card class="summary-card expense-card">
-            <mat-card-header>
-              <mat-icon mat-card-avatar>trending_down</mat-icon>
-              <mat-card-title>{{ 'dashboard.totalExpenses' | translate }}</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="amount">{{ totalExpenses | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</div>
-              <div class="change negative">+2.1% vs letzter Monat</div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        
-        <mat-grid-tile>
-          <mat-card class="summary-card profit-card">
-            <mat-card-header>
-              <mat-icon mat-card-avatar>account_balance</mat-icon>
-              <mat-card-title>{{ 'dashboard.netProfit' | translate }}</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="amount">{{ netProfit | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</div>
-              <div class="change positive">+8.7% vs letzter Monat</div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        
-        <mat-grid-tile>
-          <mat-card class="summary-card tax-card">
-            <mat-card-header>
-              <mat-icon mat-card-avatar>receipt</mat-icon>
-              <mat-card-title>{{ 'dashboard.estimatedTax' | translate }}</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="amount">{{ estimatedTax | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</div>
-              <div class="tax-rate">19% MwSt.</div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-      </mat-grid-list>
-      
-      <!-- Charts Section -->
-      <div class="charts-section">
-        <div class="chart-row">
-          <mat-card class="chart-card trend-chart">
-            <mat-card-header>
-              <mat-card-title>{{ 'dashboard.monthlyTrend' | translate }}</mat-card-title>
-              <button mat-icon-button>
-                <mat-icon>more_vert</mat-icon>
-              </button>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="chart-container">
-                <canvas baseChart
-                        [data]="trendChartData"
-                        [options]="trendChartOptions"
-                        [type]="'line'">
-                </canvas>
-              </div>
-            </mat-card-content>
-          </mat-card>
-          
-          <mat-card class="chart-card category-chart">
-            <mat-card-header>
-              <mat-card-title>{{ 'dashboard.expensesByCategory' | translate }}</mat-card-title>
-              <button mat-icon-button>
-                <mat-icon>more_vert</mat-icon>
-              </button>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="chart-container">
-                <canvas baseChart
-                        [data]="categoryChartData"
-                        [options]="categoryChartOptions"
-                        [type]="'doughnut'">
-                </canvas>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </div>
+      <div class="dashboard-header">
+        <h1>{{ 'DASHBOARD.TITLE' | translate }}</h1>
+        <p class="welcome-message" *ngIf="currentUser$ | async as user">
+          {{ 'DASHBOARD.WELCOME_MESSAGE' | translate: {name: user.firstName} }}
+        </p>
       </div>
       
-      <!-- Budget Tracking -->
-      <mat-card class="budget-card">
-        <mat-card-header>
-          <mat-card-title>{{ 'dashboard.budgetTracking' | translate }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="budget-items">
-            <div class="budget-item" *ngFor="let budget of budgetData">
-              <div class="budget-header">
-                <span class="category-name">{{ budget.category }}</span>
-                <span class="budget-amount">{{ budget.spent | currency:'EUR':'symbol':'1.2-2':'de-DE' }} / {{ budget.limit | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</span>
-              </div>
-              <div class="budget-progress">
-                <div class="progress-bar">
-                  <div class="progress-fill" [style.width.%]="budget.percentage" [class.over-budget]="budget.percentage > 100"></div>
-                </div>
-                <span class="percentage">{{ budget.percentage }}%</span>
-              </div>
+      <div class="dashboard-grid responsive-grid three-columns">
+        <!-- Balance Card -->
+        <mat-card class="stat-card balance-card">
+          <mat-card-header>
+            <div mat-card-avatar class="card-icon balance-icon">
+              <mat-icon>account_balance_wallet</mat-icon>
             </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
+            <mat-card-title>{{ 'DASHBOARD.TOTAL_BALANCE' | translate }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stat-value balance-value">
+              {{ totalBalance | germanCurrency }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+        
+        <!-- Monthly Income Card -->
+        <mat-card class="stat-card income-card">
+          <mat-card-header>
+            <div mat-card-avatar class="card-icon income-icon">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <mat-card-title>{{ 'DASHBOARD.MONTHLY_INCOME' | translate }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stat-value income-value">
+              {{ monthlyIncome | germanCurrency }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+        
+        <!-- Monthly Expenses Card -->
+        <mat-card class="stat-card expense-card">
+          <mat-card-header>
+            <div mat-card-avatar class="card-icon expense-icon">
+              <mat-icon>trending_down</mat-icon>
+            </div>
+            <mat-card-title>{{ 'DASHBOARD.MONTHLY_EXPENSES' | translate }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stat-value expense-value">
+              {{ monthlyExpenses | germanCurrency }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
       
       <!-- Quick Actions -->
-      <mat-card class="actions-card">
+      <mat-card class="quick-actions-card">
         <mat-card-header>
-          <mat-card-title>{{ 'dashboard.quickActions' | translate }}</mat-card-title>
+          <mat-card-title>{{ 'DASHBOARD.QUICK_ACTIONS' | translate }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="action-buttons">
-            <button mat-raised-button color="primary" (click)="generateReport('monthly')">
-              <mat-icon>description</mat-icon>
-              {{ 'dashboard.generateMonthlyReport' | translate }}
+            <button mat-raised-button color="primary" class="action-button">
+              <mat-icon>add</mat-icon>
+              {{ 'TRANSACTIONS.ADD_NEW' | translate }}
             </button>
-            <button mat-raised-button color="accent" (click)="generateReport('tax')">
-              <mat-icon>receipt_long</mat-icon>
-              {{ 'dashboard.generateTaxReport' | translate }}
+            <button mat-raised-button color="accent" class="action-button">
+              <mat-icon>category</mat-icon>
+              {{ 'CATEGORIES.ADD_NEW' | translate }}
             </button>
-            <button mat-raised-button (click)="exportData('csv')">
-              <mat-icon>file_download</mat-icon>
-              {{ 'dashboard.exportToCsv' | translate }}
-            </button>
-            <button mat-raised-button (click)="exportData('excel')">
-              <mat-icon>table_chart</mat-icon>
-              {{ 'dashboard.exportToExcel' | translate }}
+            <button mat-stroked-button class="action-button">
+              <mat-icon>assessment</mat-icon>
+              {{ 'REPORTS.GENERATE' | translate }}
             </button>
           </div>
         </mat-card-content>
       </mat-card>
       
-      <!-- Test File Generation Section -->
-      <mat-card class="test-actions-card">
+      <!-- Recent Transactions -->
+      <mat-card class="recent-transactions-card">
         <mat-card-header>
-          <mat-card-title>
-            <mat-icon>science</mat-icon>
-            Test: Echte Datei-Generierung
-          </mat-card-title>
-          <mat-card-subtitle>
-            Demonstration der authentischen PDF, Excel und CSV Generierung
-          </mat-card-subtitle>
+          <mat-card-title>{{ 'DASHBOARD.RECENT_TRANSACTIONS' | translate }}</mat-card-title>
+          <button mat-button color="primary">{{ 'DASHBOARD.VIEW_ALL' | translate }}</button>
         </mat-card-header>
         <mat-card-content>
-          <div class="test-action-buttons">
-            <button mat-stroked-button color="primary" (click)="testPDFGeneration()">
-              <mat-icon>picture_as_pdf</mat-icon>
-              Test PDF (jsPDF)
-            </button>
-            <button mat-stroked-button color="accent" (click)="testExcelGeneration()">
-              <mat-icon>table_chart</mat-icon>
-              Test Excel (XLSX)
-            </button>
-            <button mat-stroked-button (click)="testCSVGeneration()">
-              <mat-icon>description</mat-icon>
-              Test CSV (German)
-            </button>
-            <button mat-stroked-button color="warn" (click)="testAPIIntegration()">
-              <mat-icon>api</mat-icon>
-              Test API
-            </button>
+          <div class="no-transactions" *ngIf="recentTransactions.length === 0">
+            <mat-icon>account_balance_wallet</mat-icon>
+            <p>{{ 'DASHBOARD.NO_TRANSACTIONS' | translate }}</p>
           </div>
-          <p class="test-description">
-            <mat-icon>info</mat-icon>
-            Diese Buttons demonstrieren die echte Datei-Generierung mit deutschen Formaten.
-          </p>
+          
+          <div class="transaction-list" *ngIf="recentTransactions.length > 0">
+            <div class="transaction-item" *ngFor="let transaction of recentTransactions">
+              <div class="transaction-icon">
+                <mat-icon [ngClass]="transaction.type.toLowerCase()">{{ getTransactionIcon(transaction.type) }}</mat-icon>
+              </div>
+              <div class="transaction-details">
+                <div class="transaction-description">{{ transaction.description }}</div>
+                <div class="transaction-date">{{ transaction.date | germanDate }}</div>
+              </div>
+              <div class="transaction-amount" [ngClass]="transaction.type.toLowerCase()">
+                {{ transaction.amount | germanCurrency }}
+              </div>
+            </div>
+          </div>
         </mat-card-content>
       </mat-card>
     </div>
@@ -203,348 +135,263 @@ import { TestDataService } from '../../services/test-data.service';
   styles: [`
     .dashboard-container {
       padding: 24px;
-      background-color: #f5f5f5;
-      min-height: 100vh;
+      max-width: 1200px;
+      margin: 0 auto;
     }
     
-    .summary-card {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+    .dashboard-header {
+      margin-bottom: 32px;
+      
+      h1 {
+        margin: 0 0 8px 0;
+        color: #333;
+        font-weight: 400;
+      }
+      
+      .welcome-message {
+        margin: 0;
+        color: #666;
+        font-size: 16px;
+      }
     }
     
-    .summary-card .amount {
-      font-size: 2rem;
-      font-weight: bold;
-      margin: 8px 0;
+    .dashboard-grid {
+      margin-bottom: 24px;
     }
     
-    .summary-card .change {
-      font-size: 0.875rem;
-      font-weight: 500;
+    .stat-card {
+      .card-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        
+        mat-icon {
+          color: white;
+          font-size: 24px;
+        }
+        
+        &.balance-icon {
+          background-color: #2196f3;
+        }
+        
+        &.income-icon {
+          background-color: #4caf50;
+        }
+        
+        &.expense-icon {
+          background-color: #f44336;
+        }
+      }
+      
+      .stat-value {
+        font-size: 32px;
+        font-weight: 600;
+        margin-top: 16px;
+        
+        &.balance-value {
+          color: #2196f3;
+        }
+        
+        &.income-value {
+          color: #4caf50;
+        }
+        
+        &.expense-value {
+          color: #f44336;
+        }
+      }
     }
     
-    .change.positive { color: #4caf50; }
-    .change.negative { color: #f44336; }
-    
-    .income-card { border-left: 4px solid #4caf50; }
-    .expense-card { border-left: 4px solid #f44336; }
-    .profit-card { border-left: 4px solid #2196f3; }
-    .tax-card { border-left: 4px solid #ff9800; }
-    
-    .charts-section {
-      margin: 24px 0;
+    .quick-actions-card {
+      margin-bottom: 24px;
+      
+      .action-buttons {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        
+        .action-button {
+          min-width: 160px;
+          height: 48px;
+          
+          mat-icon {
+            margin-right: 8px;
+          }
+        }
+      }
     }
     
-    .chart-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 16px;
-    }
-    
-    .chart-card {
-      padding: 16px;
-    }
-    
-    .chart-container {
-      height: 300px;
-      position: relative;
-    }
-    
-    .budget-card, .actions-card {
-      margin: 16px 0;
-    }
-    
-    .budget-item {
-      margin: 16px 0;
-    }
-    
-    .budget-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    
-    .budget-progress {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .progress-bar {
-      flex: 1;
-      height: 8px;
-      background-color: #e0e0e0;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background-color: #4caf50;
-      transition: width 0.3s ease;
-    }
-    
-    .progress-fill.over-budget {
-      background-color: #f44336;
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    
-    .action-buttons button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .test-actions-card {
-      margin: 16px 0;
-      border: 2px dashed #2196f3;
-      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-    }
-    
-    .test-action-buttons {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-    
-    .test-action-buttons button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.875rem;
-    }
-    
-    .test-description {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.875rem;
-      color: #1976d2;
-      background: rgba(25, 118, 210, 0.1);
-      padding: 12px;
-      border-radius: 6px;
-      margin: 0;
+    .recent-transactions-card {
+      mat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        mat-card-title {
+          flex: 1;
+        }
+      }
+      
+      .no-transactions {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          margin-bottom: 16px;
+          opacity: 0.5;
+        }
+      }
+      
+      .transaction-list {
+        .transaction-item {
+          display: flex;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #f0f0f0;
+          
+          &:last-child {
+            border-bottom: none;
+          }
+          
+          .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            
+            mat-icon {
+              color: white;
+              font-size: 20px;
+              
+              &.income {
+                background-color: #4caf50;
+                border-radius: 50%;
+                padding: 10px;
+              }
+              
+              &.expense {
+                background-color: #f44336;
+                border-radius: 50%;
+                padding: 10px;
+              }
+            }
+          }
+          
+          .transaction-details {
+            flex: 1;
+            
+            .transaction-description {
+              font-weight: 500;
+              margin-bottom: 4px;
+            }
+            
+            .transaction-date {
+              font-size: 12px;
+              color: #666;
+            }
+          }
+          
+          .transaction-amount {
+            font-weight: 600;
+            font-size: 16px;
+            
+            &.income {
+              color: #4caf50;
+            }
+            
+            &.expense {
+              color: #f44336;
+            }
+          }
+        }
+      }
     }
     
     @media (max-width: 768px) {
-      mat-grid-list {
-        grid-template-columns: repeat(2, 1fr);
+      .dashboard-container {
+        padding: 16px;
       }
       
-      .chart-row {
+      .dashboard-grid {
         grid-template-columns: 1fr;
       }
       
       .action-buttons {
         flex-direction: column;
+        
+        .action-button {
+          width: 100%;
+        }
       }
     }
-  `],
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatGridListModule,
-    MatSnackBarModule,
-    BaseChartDirective,
-    TranslateModule
-  ]
+  `]
 })
 export class DashboardComponent implements OnInit {
-  // Summary data
-  totalIncome = 15750.50;
-  totalExpenses = 8920.25;
-  netProfit = 6830.25;
-  estimatedTax = 1297.75;
+  currentUser$: Observable<User | null>;
   
-  // Chart data
-  trendChartData: ChartConfiguration['data'] = {
-    labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'],
-    datasets: [
-      {
-        label: 'Einnahmen',
-        data: [12000, 15000, 13500, 16000, 14500, 15750],
-        borderColor: '#4caf50',
-        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-        tension: 0.4
-      },
-      {
-        label: 'Ausgaben',
-        data: [8000, 9500, 8800, 10200, 9100, 8920],
-        borderColor: '#f44336',
-        backgroundColor: 'rgba(244, 67, 54, 0.1)',
-        tension: 0.4
-      }
-    ]
-  };
+  // Mock data - replace with real data from services
+  totalBalance = 5250.75;
+  monthlyIncome = 3500.00;
+  monthlyExpenses = 2250.30;
   
-  categoryChartData: ChartConfiguration['data'] = {
-    labels: ['Büroausstattung', 'Marketing', 'Reisekosten', 'Software', 'Sonstiges'],
-    datasets: [{
-      data: [2500, 1800, 1200, 2400, 1020],
-      backgroundColor: [
-        '#FF6384',
-        '#36A2EB',
-        '#FFCE56',
-        '#4BC0C0',
-        '#9966FF'
-      ]
-    }]
-  };
-  
-  trendChartOptions: ChartConfiguration['options'] = {};
-  categoryChartOptions: ChartConfiguration['options'] = {};
-  
-  // Budget data
-  budgetData = [
-    { category: 'Marketing', spent: 1800, limit: 2000, percentage: 90 },
-    { category: 'Büroausstattung', spent: 2500, limit: 2200, percentage: 114 },
-    { category: 'Software', spent: 2400, limit: 3000, percentage: 80 },
-    { category: 'Reisekosten', spent: 1200, limit: 1500, percentage: 80 }
+  recentTransactions = [
+    {
+      id: '1',
+      description: 'Lebensmitteleinkäufe',
+      amount: -85.45,
+      date: new Date('2025-08-22'),
+      type: 'Expense'
+    },
+    {
+      id: '2',
+      description: 'Gehalt',
+      amount: 3500.00,
+      date: new Date('2025-08-21'),
+      type: 'Income'
+    },
+    {
+      id: '3',
+      description: 'Tankstelle',
+      amount: -65.00,
+      date: new Date('2025-08-20'),
+      type: 'Expense'
+    }
   ];
-  
-  constructor(
-    private chartConfigService: ChartConfigService,
-    private reportService: ReportService,
-    private testDataService: TestDataService,
-    private snackBar: MatSnackBar
-  ) {}
-  
+
+  constructor(private authService: AuthService) {
+    this.currentUser$ = this.authService.currentUser$;
+  }
+
   ngOnInit(): void {
-    this.setupChartOptions();
+    // Load dashboard data
     this.loadDashboardData();
   }
-  
-  private setupChartOptions(): void {
-    this.trendChartOptions = this.chartConfigService.getGermanTrendChartOptions();
-    this.categoryChartOptions = this.chartConfigService.getGermanCategoryChartOptions();
-  }
-  
+
   private loadDashboardData(): void {
-    // Load real data from API
-    // This will be implemented with actual API calls
+    // TODO: Implement actual data loading from services
+    console.log('Loading dashboard data...');
   }
-  
-  generateReport(type: 'monthly' | 'tax'): void {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-    
-    if (type === 'monthly') {
-      this.reportService.generateMonthlyReport(year, month, 'PDF').subscribe({
-        next: (blob) => this.downloadFile(blob, `Monatsbericht_${year}-${month.toString().padStart(2, '0')}.pdf`),
-        error: (error) => console.error('Fehler beim Generieren des Monatsberichts:', error)
-      });
-    } else if (type === 'tax') {
-      this.reportService.generateTaxReport(year, 'PDF').subscribe({
-        next: (blob) => this.downloadFile(blob, `Steuerbericht_${year}.pdf`),
-        error: (error) => console.error('Fehler beim Generieren des Steuerberichts:', error)
-      });
+
+  getTransactionIcon(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'income':
+        return 'arrow_upward';
+      case 'expense':
+        return 'arrow_downward';
+      case 'transfer':
+        return 'swap_horiz';
+      default:
+        return 'account_balance_wallet';
     }
-  }
-  
-  exportData(format: 'csv' | 'excel'): void {
-    this.showMessage(`Exportiere Daten als ${format.toUpperCase()}...`);
-    console.log(`Exportiere Daten als ${format.toUpperCase()}`);
-  }
-  
-  /**
-   * Test real PDF generation using jsPDF
-   */
-  async testPDFGeneration(): Promise<void> {
-    this.showMessage('Generiere echte PDF-Datei...', 'info');
-    try {
-      await this.testDataService.testPDFGeneration();
-      this.showMessage('PDF erfolgreich generiert und heruntergeladen!', 'success');
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      this.showMessage('Fehler beim Generieren der PDF', 'error');
-    }
-  }
-  
-  /**
-   * Test real Excel generation using XLSX library
-   */
-  async testExcelGeneration(): Promise<void> {
-    this.showMessage('Generiere echte Excel-Datei...', 'info');
-    try {
-      await this.testDataService.testExcelGeneration();
-      this.showMessage('Excel-Datei erfolgreich generiert und heruntergeladen!', 'success');
-    } catch (error) {
-      console.error('Excel generation error:', error);
-      this.showMessage('Fehler beim Generieren der Excel-Datei', 'error');
-    }
-  }
-  
-  /**
-   * Test CSV generation with German formatting
-   */
-  async testCSVGeneration(): Promise<void> {
-    this.showMessage('Generiere CSV mit deutscher Formatierung...', 'info');
-    try {
-      await this.testDataService.testCSVGeneration();
-      this.showMessage('CSV-Datei erfolgreich generiert und heruntergeladen!', 'success');
-    } catch (error) {
-      console.error('CSV generation error:', error);
-      this.showMessage('Fehler beim Generieren der CSV-Datei', 'error');
-    }
-  }
-  
-  /**
-   * Test API integration
-   */
-  testAPIIntegration(): void {
-    this.showMessage('Teste API-Integration...', 'info');
-    this.testDataService.demonstrateAPIIntegration().subscribe({
-      next: (result) => {
-        console.log('API Health Check Result:', result);
-        const statusMessage = result.status === 'offline' 
-          ? 'API offline - Mock-Daten werden verwendet'
-          : `API online - Status: ${result.status}`;
-        this.showMessage(statusMessage, result.status === 'offline' ? 'warn' : 'success');
-      },
-      error: (error) => {
-        console.error('API test error:', error);
-        this.showMessage('API-Test fehlgeschlagen - Mock-Daten verfügbar', 'warn');
-      }
-    });
-  }
-  
-  private downloadFile(blob: Blob, filename: string): void {
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    window.URL.revokeObjectURL(url);
-  }
-  
-  /**
-   * Show user feedback message
-   */
-  private showMessage(message: string, type: 'success' | 'error' | 'info' | 'warn' = 'info'): void {
-    const panelClass = {
-      'success': ['success-snackbar'],
-      'error': ['error-snackbar'],
-      'info': ['info-snackbar'],
-      'warn': ['warn-snackbar']
-    }[type];
-    
-    this.snackBar.open(message, 'OK', {
-      duration: type === 'error' ? 5000 : 3000,
-      panelClass,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom'
-    });
   }
 }

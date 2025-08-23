@@ -1,263 +1,157 @@
-/* Global Styles for German Financial Dashboard */
+/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
-/* Import Angular Material Theme */
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
+// Define German-inspired color palette
+$primary-palette: mat.define-palette(mat.$blue-grey-palette);
+$accent-palette: mat.define-palette(mat.$amber-palette);
+$warn-palette: mat.define-palette(mat.$red-palette);
 
-/* German-specific styling and Material Design customization */
+// Create theme
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary-palette,
+    accent: $accent-palette,
+    warn: $warn-palette,
+  ),
+  typography: mat.define-typography-config(
+    $font-family: '"Roboto", "Helvetica Neue", sans-serif'
+  )
+));
 
-/* Root CSS Variables for consistent theming */
-:root {
-  --primary-color: #1976d2;
-  --accent-color: #ffc107;
-  --warn-color: #f44336;
-  --success-color: #4caf50;
-  --background-color: #fafafa;
-  --surface-color: #ffffff;
-  --text-primary: #212121;
-  --text-secondary: #757575;
-  --border-color: #e0e0e0;
-  
-  /* German-specific colors */
-  --german-red: #d32f2f;
-  --german-gold: #ffc107;
-  --german-black: #212121;
-  
-  /* Financial colors */
-  --income-color: #4caf50;
-  --expense-color: #f44336;
-  --profit-color: #2196f3;
-  --tax-color: #ff9800;
-}
+// Include theme styles for Angular Material components
+@include mat.all-component-themes($theme);
 
-/* Global font settings */
-body {
-  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+// Global styles
+html, body {
+  height: 100%;
   margin: 0;
   padding: 0;
-  background-color: var(--background-color);
-  color: var(--text-primary);
-  line-height: 1.6;
+  font-family: 'Roboto', sans-serif;
 }
 
-/* German number and currency formatting support */
-.currency-german {
-  font-variant-numeric: tabular-nums;
+body {
+  background-color: #f5f5f5;
 }
 
-/* Material Design custom overrides */
-.mat-mdc-card {
-  border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  transition: box-shadow 0.3s ease !important;
-}
-
-.mat-mdc-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Custom button styles */
-.mat-mdc-raised-button {
-  border-radius: 8px !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  padding: 0 24px !important;
-  min-height: 44px !important;
-}
-
-/* Custom form field styles */
-.mat-mdc-form-field {
-  width: 100%;
-}
-
-.mat-mdc-form-field .mat-mdc-text-field-wrapper {
-  border-radius: 8px !important;
-}
-
-/* Table styles */
-.mat-mdc-table {
-  border-radius: 8px !important;
-  overflow: hidden !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-.mat-mdc-header-row {
-  background-color: #f5f5f5 !important;
-}
-
-.mat-mdc-header-cell {
-  font-weight: 600 !important;
-  color: var(--text-primary) !important;
-}
-
-/* Chart container styles */
-.chart-container {
-  position: relative;
-  height: 300px;
-  width: 100%;
-}
-
-.chart-container canvas {
-  max-height: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Financial summary card styles */
-.summary-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-left: 4px solid var(--primary-color);
-  transition: all 0.3s ease;
-}
-
-.summary-card:hover {
-  transform: translateY(-2px);
-}
-
-.summary-card.income {
-  border-left-color: var(--income-color);
-}
-
-.summary-card.expense {
-  border-left-color: var(--expense-color);
-}
-
-.summary-card.profit {
-  border-left-color: var(--profit-color);
-}
-
-.summary-card.tax {
-  border-left-color: var(--tax-color);
-}
-
-/* German-specific utility classes */
-.text-german-currency {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
-.positive-change {
-  color: var(--success-color);
-  font-weight: 500;
-}
-
-.negative-change {
-  color: var(--warn-color);
-  font-weight: 500;
-}
-
-.neutral-change {
-  color: var(--text-secondary);
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .mat-mdc-card {
-    margin: 8px !important;
-  }
-  
-  .mat-mdc-raised-button {
+// German-specific styling
+.german-form {
+  .mat-mdc-form-field {
     width: 100%;
-    margin-bottom: 8px !important;
+    margin-bottom: 16px;
   }
   
-  .chart-container {
-    height: 250px;
+  .mat-mdc-form-field-label {
+    font-weight: 500;
   }
 }
 
-@media (max-width: 480px) {
-  body {
-    font-size: 14px;
+.currency-input {
+  text-align: right;
+  
+  input {
+    text-align: right;
+  }
+}
+
+// German number formatting styles
+.german-number {
+  font-feature-settings: 'tnum';
+  
+  &.currency {
+    color: mat.get-color-from-palette($primary-palette, 700);
+    font-weight: 500;
   }
   
-  .chart-container {
-    height: 200px;
-  }
-}
-
-/* Print styles for reports */
-@media print {
-  .mat-mdc-card {
-    box-shadow: none !important;
-    border: 1px solid var(--border-color) !important;
+  &.positive {
+    color: #4caf50;
   }
   
-  .mat-mdc-button {
-    display: none !important;
+  &.negative {
+    color: #f44336;
+  }
+}
+
+// Layout styles
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-container {
+  flex: 1;
+  padding: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+}
+
+// Material Design customizations
+.mat-toolbar {
+  background: mat.get-color-from-palette($primary-palette);
+  color: white;
+}
+
+.mat-card {
+  margin-bottom: 20px;
+  
+  .mat-card-header {
+    .mat-card-title {
+      color: mat.get-color-from-palette($primary-palette, 800);
+    }
+  }
+}
+
+// Responsive grid
+.responsive-grid {
+  display: grid;
+  gap: 20px;
+  
+  &.two-columns {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
   
-  .chart-container {
-    page-break-inside: avoid;
+  &.three-columns {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
 }
 
-/* Loading and transition animations */
-.fade-in {
-  animation: fadeIn 0.5s ease-in;
+// Loading spinner
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Accessibility improvements */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Focus indicators */
-.mat-mdc-button:focus,
-.mat-mdc-icon-button:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .mat-mdc-card {
-    border: 2px solid var(--text-primary) !important;
-  }
+// Error message styling
+.error-message {
+  color: mat.get-color-from-palette($warn-palette);
+  background-color: mat.get-color-from-palette($warn-palette, 50);
+  border: 1px solid mat.get-color-from-palette($warn-palette, 300);
+  border-radius: 4px;
+  padding: 12px;
+  margin: 8px 0;
   
-  .summary-card {
-    border-left-width: 6px;
+  .mat-icon {
+    vertical-align: middle;
+    margin-right: 8px;
   }
 }
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Dark mode support (optional) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: #121212;
-    --surface-color: #1e1e1e;
-    --text-primary: #ffffff;
-    --text-secondary: #b0b0b0;
-    --border-color: #333333;
-  }
+// Success message styling
+.success-message {
+  color: #4caf50;
+  background-color: #e8f5e8;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  padding: 12px;
+  margin: 8px 0;
   
-  .mat-mdc-card {
-    background-color: var(--surface-color) !important;
-    color: var(--text-primary) !important;
+  .mat-icon {
+    vertical-align: middle;
+    margin-right: 8px;
   }
 }
