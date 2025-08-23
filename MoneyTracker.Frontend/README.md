@@ -1,7 +1,5 @@
 # Money Tracker - Angular Frontend Documentation
 
-**Deployed URL:** https://8iv6mibys8jq.space.minimax.io
-
 ## Overview
 
 This is a comprehensive Angular 17+ frontend application for the German Money Tracker system, built with German localization (de-DE), Angular Material design system, and modern standalone components architecture.

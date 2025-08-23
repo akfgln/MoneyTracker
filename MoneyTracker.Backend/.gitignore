@@ -9,7 +9,14 @@
 *.user
 *.userosscache
 *.sln.docstates
-
+*/bin
+*/obj
+*/bin/*
+*/obj/*
+bin
+obj
+bin/*
+obj/*
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -362,3 +369,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+MoneyTracker.Backend/src/MoneyTracker.API/bin/*
+MoneyTracker.Backend/src/MoneyTracker.API/obj/*
+MoneyTracker.Backend/src/MoneyTracker.Application/obj/*
+MoneyTracker.Backend/src/MoneyTracker.Application/bin/*
+MoneyTracker.Backend/src/MoneyTracker.Domain/obj/*
+MoneyTracker.Backend/src/MoneyTracker.Domain/bin/*
+MoneyTracker.Backend/src/MoneyTracker.Infrastructure/obj/*
+MoneyTracker.Backend/src/MoneyTracker.Infrastructure/bin/*
