@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -31,9 +31,9 @@ import {
   Category,
   TransactionQueryParameters,
   TransactionType,
-  CategoryType,
-  PagedResult
+  CategoryType
 } from '../../../../core/models/transaction.model';
+import { PagedResult } from '../../../../core/models/api-response.model';
 import { GermanCurrencyPipe } from '../../../../shared/pipes/german-currency.pipe';
 import { GermanDatePipe } from '../../../../shared/pipes/german-date.pipe';
 import { GermanNumberPipe } from '../../../../shared/pipes/german-number.pipe';
@@ -647,6 +647,16 @@ import { MatDivider } from '@angular/material/divider';
 export class TransactionListComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+  
+  // Input properties required by parent component
+  @Input() pageSize: number = 25;
+  @Input() allowBulkOperations: boolean = true;
+  
+  // Output events
+  @Output() transactionSelected = new EventEmitter<Transaction>();
+  @Output() bulkSelectionChanged = new EventEmitter<Transaction[]>();
+  @Output() transactionEdit = new EventEmitter<Transaction>();
+  @Output() transactionDelete = new EventEmitter<Transaction>();
 
   displayedColumns = ['select', 'date', 'description', 'category', 'amount', 'account', 'status', 'actions'];
   dataSource = new MatTableDataSource<Transaction>();
@@ -665,7 +675,7 @@ export class TransactionListComponent implements OnInit, OnDestroy {
   categories: Category[] = [];
   categoryGroups: { label: string; categories: Category[] }[] = [];
   totalCount = 0;
-  pageSize = 20;
+  // pageSize removed - using @Input pageSize instead
   currentPage = 0;
   loading = false;
   
@@ -743,7 +753,7 @@ export class TransactionListComponent implements OnInit, OnDestroy {
       page: this.currentPage + 1,
       pageSize: this.pageSize,
       sortBy: this.sort?.active || 'transactionDate',
-      sortDirection: this.sort?.direction?.toUpperCase() as 'ASC' | 'DESC' || 'DESC',
+      sortDirection: this.sort?.direction?.toLowerCase() as 'asc' | 'desc' || 'desc',
       searchTerm: this.searchQuery || undefined,
       categoryId: this.selectedCategoryId || undefined,
       transactionType: this.selectedTransactionType as TransactionType || undefined,

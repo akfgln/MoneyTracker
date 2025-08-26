@@ -4,42 +4,8 @@ import { Observable, BehaviorSubject, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { GermanFormatService } from './german-format.service';
 
-export interface Transaction {
-  id: string;
-  amount: number;
-  description: string;
-  date: Date;
-  categoryId?: string;
-  category?: Category;
-  vatRate?: number;
-  vatAmount?: number;
-  receiptUrl?: string;
-  bankStatementUrl?: string;
-  notes?: string;
-  tags?: string[];
-  isRecurring?: boolean;
-  recurringPattern?: RecurringPattern;
-  createdAt: Date;
-  updatedAt: Date;
-  userId: string;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  parentId?: string;
-  color?: string;
-  icon?: string;
-  children?: Category[];
-  level: number;
-}
-
-export interface RecurringPattern {
-  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  interval: number;
-  endDate?: Date;
-  occurrences?: number;
-}
+// Interfaces moved to core models to avoid duplication
+import { Transaction, Category, RecurringPattern } from '../../../core/models/transaction.model';
 
 export interface TransactionFilter {
   startDate?: Date;
@@ -429,8 +395,8 @@ export class TransactionService {
   }
   
   private buildCategoryTree(categories: Category[]): Category[] {
-    const categoryMap = new Map<string, Category>();
-    const rootCategories: Category[] = [];
+    const categoryMap = new Map<string, any>();
+    const rootCategories: any[] = [];
     
     // First pass: create all categories with children arrays
     categories.forEach(category => {
@@ -441,8 +407,8 @@ export class TransactionService {
     categories.forEach(category => {
       const categoryWithChildren = categoryMap.get(category.id)!;
       
-      if (category.parentId) {
-        const parent = categoryMap.get(category.parentId);
+      if ((category as any).parentCategoryId) {
+        const parent = categoryMap.get((category as any).parentCategoryId);
         if (parent) {
           parent.children!.push(categoryWithChildren);
         }
@@ -465,7 +431,7 @@ export class TransactionService {
   
   // Transaction status helpers
   getTransactionStatus(transaction: Transaction): 'complete' | 'missing-receipt' | 'needs-review' {
-    if (!transaction.receiptUrl && transaction.amount > 100) {
+    if (!(transaction as any).receiptUrl && transaction.amount > 100) {
       return 'missing-receipt';
     }
     

@@ -28,6 +28,7 @@ export interface Transaction {
   description: string;
   merchantName?: string;
   transactionDate: Date;
+  date: Date; // Alias for transactionDate for backward compatibility  
   transactionType: TransactionType;
   notes?: string;
   tags?: string[];
@@ -213,7 +214,7 @@ export interface TransactionQueryParameters {
   page?: number;
   pageSize?: number;
   sortBy?: string;
-  sortDirection?: 'ASC' | 'DESC';
+  sortDirection?: 'asc' | 'desc';
   searchTerm?: string;
   categoryId?: string;
   accountId?: string;
@@ -230,7 +231,7 @@ export interface CategoryQueryParameters {
   page?: number;
   pageSize?: number;
   sortBy?: string;
-  sortDirection?: 'ASC' | 'DESC';
+  sortDirection?: 'asc' | 'desc';
   searchTerm?: string;
   categoryType?: CategoryType;
   isActive?: boolean;
@@ -266,12 +267,11 @@ export interface MonthlyUsage {
   totalAmount: number;
 }
 
-export interface PagedResult<T> {
-  items: T[];
-  page: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
+// PagedResult interface moved to api-response.model.ts for centralized management
+
+export interface RecurringPattern {
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval: number;
+  endDate?: Date;
+  occurrences?: number;
 }

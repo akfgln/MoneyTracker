@@ -34,10 +34,20 @@ export class FileService {
       .pipe(
         map(response => ({
           ...response.data,
-          uploadDate: new Date(response.data.uploadDate),
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          fileName: response.data?.fileName ?? '',
+          originalFileName: response.data?.originalFileName ?? '',
+          fileSize: response.data?.fileSize ?? 0,
+          fileType: response.data?.fileType ?? '',
+          filePath: response.data?.filePath ?? '',
+          status: response.data?.status ?? FileStatus.Uploading,
+          downloadCount: response.data?.downloadCount ?? 0,
+          isExpired: response.data?.isExpired ?? false,
+          uploadDate: new Date(response.data?.uploadDate || new Date()),
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as UploadedFile)
       );
   }
 
@@ -58,17 +68,27 @@ export class FileService {
       .pipe(
         map(response => ({
           ...response.data,
-          uploadDate: new Date(response.data.uploadDate),
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          fileName: response.data?.fileName ?? '',
+          originalFileName: response.data?.originalFileName ?? '',
+          fileSize: response.data?.fileSize ?? 0,
+          fileType: response.data?.fileType ?? '',
+          filePath: response.data?.filePath ?? '',
+          status: response.data?.status ?? FileStatus.Uploading,
+          downloadCount: response.data?.downloadCount ?? 0,
+          isExpired: response.data?.isExpired ?? false,
+          uploadDate: new Date(response.data?.uploadDate || new Date()),
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as UploadedFile)
       );
   }
 
   getUserFiles(): Observable<UploadedFile[]> {
     return this.apiService.get<UploadedFile[]>(`${this.endpoint}/user`)
       .pipe(
-        map(response => response.data.map(file => ({
+        map(response => (response.data || []).map(file => ({
           ...file,
           uploadDate: new Date(file.uploadDate),
           createdAt: new Date(file.createdAt),
@@ -83,7 +103,7 @@ export class FileService {
 
   deleteFile(id: string): Observable<boolean> {
     return this.apiService.delete<boolean>(`${this.endpoint}/${id}`)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data ?? false));
   }
 
   getProcessingStatus(id: string): Observable<UploadedFile> {
@@ -91,10 +111,20 @@ export class FileService {
       .pipe(
         map(response => ({
           ...response.data,
-          uploadDate: new Date(response.data.uploadDate),
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          fileName: response.data?.fileName ?? '',
+          originalFileName: response.data?.originalFileName ?? '',
+          fileSize: response.data?.fileSize ?? 0,
+          fileType: response.data?.fileType ?? '',
+          filePath: response.data?.filePath ?? '',
+          status: response.data?.status ?? FileStatus.Uploading,
+          downloadCount: response.data?.downloadCount ?? 0,
+          isExpired: response.data?.isExpired ?? false,
+          uploadDate: new Date(response.data?.uploadDate || new Date()),
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as UploadedFile)
       );
   }
 
@@ -108,9 +138,19 @@ export class FileService {
       .pipe(
         map(response => ({
           ...response.data,
-          uploadDate: new Date(response.data.uploadDate),
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          fileName: response.data?.fileName ?? '',
+          originalFileName: response.data?.originalFileName ?? '',
+          fileSize: response.data?.fileSize ?? 0,
+          fileType: response.data?.fileType ?? '',
+          filePath: response.data?.filePath ?? '',
+          status: response.data?.status ?? FileStatus.Uploading,
+          downloadCount: response.data?.downloadCount ?? 0,
+          isExpired: response.data?.isExpired ?? false,
+          uploadDate: new Date(response.data?.uploadDate || new Date()),
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
         }))
       );
   }

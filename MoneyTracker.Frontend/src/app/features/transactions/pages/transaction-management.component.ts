@@ -23,7 +23,8 @@ import { PdfUploadComponent } from '../components/pdf-upload/pdf-upload.componen
 import { BulkUpdateDialogComponent } from '../components/bulk-update-dialog/bulk-update-dialog.component';
 
 // Services
-import { TransactionService, Transaction, TransactionSummary } from '../services/transaction.service';
+import { TransactionService, TransactionSummary } from '../services/transaction.service';
+import { Transaction } from '../../../core/models/transaction.model';
 import { GermanFormatService } from '../services/german-format.service';
 import { FileUploadService, FileUploadResult } from '../services/file-upload.service';
 

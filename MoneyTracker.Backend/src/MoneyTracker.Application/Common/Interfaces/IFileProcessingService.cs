@@ -42,4 +42,28 @@ public interface IFileProcessingService
     /// <param name="fileId">The ID of the uploaded file</param>
     /// <returns>Validation result</returns>
     Task<FileValidationResultDto> ValidateFileAsync(Guid fileId);
+
+    /// <summary>
+    /// Validate file content before upload
+    /// </summary>
+    /// <param name="fileContent">The file content bytes</param>
+    /// <param name="fileName">The file name</param>
+    /// <param name="fileType">The expected file type</param>
+    /// <returns>True if valid, false otherwise</returns>
+    Task<bool> ValidateFileAsync(byte[] fileContent, string fileName, string fileType);
+
+    /// <summary>
+    /// Generate preview of bank statement with extracted transactions
+    /// </summary>
+    /// <param name="fileId">The ID of the uploaded file</param>
+    /// <returns>Bank statement preview with transactions</returns>
+    Task<BankStatementPreviewDto> GeneratePreviewAsync(Guid fileId);
+
+    /// <summary>
+    /// Import selected transactions from bank statement preview
+    /// </summary>
+    /// <param name="fileId">The ID of the uploaded file</param>
+    /// <param name="importRequest">Import configuration</param>
+    /// <returns>Import result</returns>
+    Task<ImportResultDto> ImportTransactionsAsync(Guid fileId, ImportTransactionsDto importRequest);
 }

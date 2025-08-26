@@ -10,9 +10,10 @@ import {
   UpdateTransactionDto,
   TransactionQueryParameters,
   BulkUpdateTransactionsDto,
-  PagedResult,
-  VATCalculation
+  VATCalculation,
+  TransactionType
 } from '../models/transaction.model';
+import { PagedResult, PaginatedResponse } from '../models/api-response.model';
 import { GermanFormatService } from '../../shared/services/german-format.service';
 
 @Injectable({
@@ -29,15 +30,24 @@ export class TransactionService {
   getTransactions(params?: TransactionQueryParameters): Observable<PagedResult<Transaction>> {
     return this.apiService.getPaginated<Transaction>(this.endpoint, params)
       .pipe(
-        map(response => {
-          // Convert date strings to Date objects and format for German locale
-          response.items = response.items.map(transaction => ({
+        map((response: PaginatedResponse<Transaction>) => {
+          // Convert PaginatedResponse to PagedResult and transform dates
+          const transformedTransactions = (response.data || []).map(transaction => ({
             ...transaction,
             transactionDate: new Date(transaction.transactionDate),
             createdAt: new Date(transaction.createdAt),
             updatedAt: new Date(transaction.updatedAt)
           }));
-          return response;
+          
+          return {
+            items: transformedTransactions,
+            page: response.pagination.currentPage,
+            pageSize: response.pagination.pageSize,
+            totalCount: response.pagination.totalCount,
+            totalPages: response.pagination.totalPages,
+            hasNextPage: response.pagination.hasNext,
+            hasPreviousPage: response.pagination.hasPrevious
+          };
         })
       );
   }
@@ -47,10 +57,23 @@ export class TransactionService {
       .pipe(
         map(response => ({
           ...response.data,
-          transactionDate: new Date(response.data.transactionDate),
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          accountId: response.data?.accountId ?? '',
+          categoryId: response.data?.categoryId ?? '',
+          amount: response.data?.amount ?? 0,
+          netAmount: response.data?.netAmount ?? 0,
+          vatAmount: response.data?.vatAmount ?? 0,
+          vatRate: response.data?.vatRate ?? 0,
+          description: response.data?.description ?? '',
+          transactionType: response.data?.transactionType ?? TransactionType.Expense,
+          date: new Date(response.data?.transactionDate || new Date()),
+          isRecurring: response.data?.isRecurring ?? false,
+          isReconciled: response.data?.isReconciled ?? false,
+          transactionDate: new Date(response.data?.transactionDate || new Date()),
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as Transaction)
       );
   }
 
@@ -62,10 +85,23 @@ export class TransactionService {
       .pipe(
         map(response => ({
           ...response.data,
-          transactionDate: new Date(response.data.transactionDate),
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          accountId: response.data?.accountId ?? '',
+          categoryId: response.data?.categoryId ?? '',
+          amount: response.data?.amount ?? 0,
+          netAmount: response.data?.netAmount ?? 0,
+          vatAmount: response.data?.vatAmount ?? 0,
+          vatRate: response.data?.vatRate ?? 0,
+          description: response.data?.description ?? '',
+          transactionType: response.data?.transactionType ?? TransactionType.Expense,
+          date: new Date(response.data?.transactionDate || new Date()),
+          isRecurring: response.data?.isRecurring ?? false,
+          isReconciled: response.data?.isReconciled ?? false,
+          transactionDate: new Date(response.data?.transactionDate || new Date()),
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as Transaction)
       );
   }
 
@@ -77,16 +113,29 @@ export class TransactionService {
       .pipe(
         map(response => ({
           ...response.data,
-          transactionDate: new Date(response.data.transactionDate),
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          accountId: response.data?.accountId ?? '',
+          categoryId: response.data?.categoryId ?? '',
+          amount: response.data?.amount ?? 0,
+          netAmount: response.data?.netAmount ?? 0,
+          vatAmount: response.data?.vatAmount ?? 0,
+          vatRate: response.data?.vatRate ?? 0,
+          description: response.data?.description ?? '',
+          transactionType: response.data?.transactionType ?? TransactionType.Expense,
+          date: new Date(response.data?.transactionDate || new Date()),
+          isRecurring: response.data?.isRecurring ?? false,
+          isReconciled: response.data?.isReconciled ?? false,
+          transactionDate: new Date(response.data?.transactionDate || new Date()),
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as Transaction)
       );
   }
 
   deleteTransaction(id: string): Observable<boolean> {
     return this.apiService.delete<boolean>(`${this.endpoint}/${id}`)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data ?? false));
   }
 
   bulkUpdateTransactions(request: BulkUpdateTransactionsDto): Observable<number> {
@@ -96,12 +145,12 @@ export class TransactionService {
     };
     
     return this.apiService.post<number>(`${this.endpoint}/bulk-update`, formattedRequest)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data ?? 0));
   }
 
   bulkDeleteTransactions(transactionIds: string[]): Observable<number> {
     return this.apiService.post<number>(`${this.endpoint}/bulk-delete`, { transactionIds })
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data ?? 0));
   }
 
   duplicateTransaction(id: string): Observable<Transaction> {
@@ -109,10 +158,23 @@ export class TransactionService {
       .pipe(
         map(response => ({
           ...response.data,
-          transactionDate: new Date(response.data.transactionDate),
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          accountId: response.data?.accountId ?? '',
+          categoryId: response.data?.categoryId ?? '',
+          amount: response.data?.amount ?? 0,
+          netAmount: response.data?.netAmount ?? 0,
+          vatAmount: response.data?.vatAmount ?? 0,
+          vatRate: response.data?.vatRate ?? 0,
+          description: response.data?.description ?? '',
+          transactionType: response.data?.transactionType ?? TransactionType.Expense,
+          date: new Date(response.data?.transactionDate || new Date()),
+          isRecurring: response.data?.isRecurring ?? false,
+          isReconciled: response.data?.isReconciled ?? false,
+          transactionDate: new Date(response.data?.transactionDate || new Date()),
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as Transaction)
       );
   }
 
@@ -147,7 +209,7 @@ export class TransactionService {
 
   reconcileTransactions(transactionIds: string[]): Observable<number> {
     return this.apiService.post<number>(`${this.endpoint}/reconcile`, { transactionIds })
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data ?? 0));
   }
 
   exportTransactions(params?: TransactionQueryParameters): Observable<Blob> {
@@ -156,6 +218,6 @@ export class TransactionService {
 
   getTransactionSummary(params?: TransactionQueryParameters): Observable<any> {
     return this.apiService.get<any>(`${this.endpoint}/summary`, params)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data ?? {}));
   }
 }

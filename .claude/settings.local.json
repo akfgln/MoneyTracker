@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(dotnet build:*)",
+      "Bash(npm start)",
+      "Bash(timeout 20s npm start)",
+      "Bash(timeout 25s npm start)",
+      "Bash(npx kill-port:*)",
+      "Bash(npm start:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

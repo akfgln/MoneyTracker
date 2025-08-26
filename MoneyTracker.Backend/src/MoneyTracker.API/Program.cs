@@ -83,7 +83,7 @@ builder.Services.AddCors(options =>
 // Configure ASP.NET Core Identity with German password requirements
 var databaseProvider = builder.Configuration.GetValue<string>("DatabaseSettings:Provider")?.ToLower();
 
-var identityBuilder = builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
+var identityBuilder = builder.Services.AddIdentity<User, ApplicationRole>(options =>
 {
     // German password requirements
     options.Password.RequiredLength = 12;

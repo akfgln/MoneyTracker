@@ -331,7 +331,7 @@ public class FilesController : ControllerBase
                 return BadRequest(new { message = "Datei muss erst verarbeitet werden." });
             }
 
-            var result = await _fileProcessing.ImportTransactionsAsync(id, dto, userId);
+            var result = await _fileProcessing.ImportTransactionsAsync(id, dto);
 
             _logger.LogInformation("Import completed for file {FileId}: {Imported}/{Total} transactions",
                 id, result.ImportedTransactions, result.TotalTransactions);
@@ -438,7 +438,7 @@ public class FilesController : ControllerBase
         var fileContent = memoryStream.ToArray();
 
         // Validate file content
-        var isValid = await _fileProcessing.ValidateFileAsync(fileContent, file.FileName, fileType);
+        var isValid = await _fileProcessing.ValidateFileAsync(fileContent, file.FileName, fileType.ToString());
         if (!isValid)
         {
             return new FileValidationResult(false, "Datei ist beschädigt oder ungültig.");

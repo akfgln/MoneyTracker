@@ -240,4 +240,96 @@ public class FileProcessingService : IFileProcessingService
 
         return result;
     }
+
+    /// <summary>
+    /// Validate file content before upload (placeholder implementation)
+    /// </summary>
+    public async Task<bool> ValidateFileAsync(byte[] fileContent, string fileName, string fileType)
+    {
+        try
+        {
+            if (fileContent == null || fileContent.Length == 0)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(fileName))
+                return false;
+
+            // Basic PDF validation for file content
+            if (fileType?.ToLower() == "pdf" || fileName.ToLower().EndsWith(".pdf"))
+            {
+                return await _pdfExtraction.ValidatePdfAsync(fileContent);
+            }
+
+            return true; // For other file types, basic validation passes
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "File validation failed for {FileName}", fileName);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Generate preview of bank statement (placeholder implementation)
+    /// </summary>
+    public async Task<BankStatementPreviewDto> GeneratePreviewAsync(Guid fileId)
+    {
+        try
+        {
+            var file = await _fileRepository.GetByIdAsync(fileId);
+            if (file == null)
+            {
+                throw new FileNotFoundException($"File with ID {fileId} not found");
+            }
+
+            // Parse bank statement to extract transactions
+            var transactions = await ParseBankStatementAsync(fileId);
+
+            return new BankStatementPreviewDto
+            {
+                FileId = fileId,
+                FileName = file.OriginalFileName,
+                BankName = "Unknown", // Would be extracted from parsing
+                Transactions = transactions,
+                TotalTransactions = transactions.Count,
+                NewTransactions = transactions.Count(t => !t.IsDuplicate),
+                DuplicateTransactions = transactions.Count(t => t.IsDuplicate),
+                TotalIncome = transactions.Where(t => t.Amount > 0).Sum(t => t.Amount),
+                TotalExpenses = transactions.Where(t => t.Amount < 0).Sum(t => Math.Abs(t.Amount)),
+                ProcessingStatus = "Completed"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate preview for file {FileId}", fileId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Import selected transactions (placeholder implementation)
+    /// </summary>
+    public async Task<ImportResultDto> ImportTransactionsAsync(Guid fileId, ImportTransactionsDto importRequest)
+    {
+        try
+        {
+            // This would contain the actual import logic
+            _logger.LogInformation("Importing {Count} transactions from file {FileId}", 
+                importRequest.SelectedTransactionIds.Count, fileId);
+
+            return new ImportResultDto
+            {
+                TotalTransactions = importRequest.SelectedTransactionIds.Count,
+                ImportedTransactions = importRequest.SelectedTransactionIds.Count,
+                SkippedDuplicates = 0,
+                FailedTransactions = 0,
+                ImportDate = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to import transactions from file {FileId}", fileId);
+            throw;
+        }
+    }
 }

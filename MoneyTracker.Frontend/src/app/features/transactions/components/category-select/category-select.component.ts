@@ -13,7 +13,14 @@ import { MatChipsModule } from '@angular/material/chips';
 import { Observable, Subject, BehaviorSubject, combineLatest } from 'rxjs';
 import { takeUntil, map, startWith } from 'rxjs/operators';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
-import { TransactionService, Category } from '../../services/transaction.service';
+import { TransactionService } from '../../services/transaction.service';
+import { Category } from '../../../../core/models/transaction.model';
+
+interface CategoryNode extends Category {
+  children?: CategoryNode[];
+  parentId?: string;
+  level?: number;
+}
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FlatTreeControl } from '@angular/cdk/tree';
 
@@ -52,13 +59,13 @@ interface FlatCategory {
           >
             <mat-option 
               [value]="rootCategory.id"
-              [style.padding-left.px]="rootCategory.level * 16"
+              [style.padding-left.px]="getRootCategoryLevel(rootCategory) * 16"
             >
               <mat-icon *ngIf="rootCategory.icon" class="category-icon">{{ rootCategory.icon }}</mat-icon>
               <span [style.color]="rootCategory.color">{{ rootCategory.name }}</span>
             </mat-option>
             
-            <ng-container *ngTemplateOutlet="categoryOptions; context: { categories: rootCategory.children }"></ng-container>
+            <ng-container *ngTemplateOutlet="categoryOptions; context: { categories: getRootCategoryChildren(rootCategory) }"></ng-container>
           </mat-optgroup>
         </mat-select>
         
@@ -330,15 +337,15 @@ export class CategorySelectComponent implements OnInit, OnDestroy {
       id: category.id,
       name: category.name,
       level: level,
-      expandable: !!category.children && category.children.length > 0,
-      parentId: category.parentId,
+      expandable: !!(category as any).children && (category as any).children.length > 0,
+      parentId: (category as any).parentId,
       color: category.color,
       icon: category.icon,
       fullPath: this.buildCategoryPath(category)
     }),
     node => node.level,
     node => node.expandable,
-    category => category.children || []
+    category => (category as any).children || []
   );
   
   dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
@@ -518,8 +525,8 @@ export class CategorySelectComponent implements OnInit, OnDestroy {
         return category;
       }
       
-      if (category.children) {
-        const found = this.findCategoryInTree(category.children, categoryId);
+      if ((category as any).children) {
+        const found = this.findCategoryInTree((category as any).children, categoryId);
         if (found) {
           return found;
         }
@@ -539,15 +546,15 @@ export class CategorySelectComponent implements OnInit, OnDestroy {
         id: category.id,
         name: category.name,
         level: level,
-        expandable: !!category.children && category.children.length > 0,
-        parentId: category.parentId,
+        expandable: !!(category as any).children && (category as any).children.length > 0,
+        parentId: (category as any).parentId,
         color: category.color,
         icon: category.icon,
         fullPath: currentPath
       });
       
-      if (category.children) {
-        result.push(...this.flattenCategories(category.children, level + 1, currentPath));
+      if ((category as any).children) {
+        result.push(...this.flattenCategories((category as any).children, level + 1, currentPath));
       }
     }
     
@@ -583,5 +590,13 @@ export class CategorySelectComponent implements OnInit, OnDestroy {
     
     // Note: This would need parent lookup logic in a real implementation
     return path;
+  }
+
+  getRootCategoryLevel(category: Category): number {
+    return (category as any).level || 0;
+  }
+
+  getRootCategoryChildren(category: Category): Category[] {
+    return (category as any).children || [];
   }
 }

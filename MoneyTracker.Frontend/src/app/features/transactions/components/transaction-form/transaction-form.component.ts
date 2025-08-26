@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -493,6 +493,13 @@ export interface TransactionFormData {
   `]
 })
 export class TransactionFormComponent implements OnInit, OnDestroy {
+  // Input properties
+  @Input() mode: 'create' | 'edit' = 'create';
+  @Input() transaction?: Transaction;
+  
+  // Output events  
+  @Output() transactionSaved = new EventEmitter<Transaction>();
+  
   transactionForm!: FormGroup;
   isEditMode = false;
   isSubmitting = false;

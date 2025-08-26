@@ -13,8 +13,9 @@ import {
   CategoryHierarchy,
   CategoryUsageStats,
   BulkUpdateCategoriesDto,
-  PagedResult
+  CategoryType
 } from '../models/transaction.model';
+import { PaginatedResponse, PagedResult } from '../models/api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -27,13 +28,23 @@ export class CategoryService {
   getCategories(params?: CategoryQueryParameters): Observable<PagedResult<Category>> {
     return this.apiService.getPaginated<Category>(this.endpoint, params)
       .pipe(
-        map(response => {
-          response.items = response.items.map(category => ({
+        map((response: PaginatedResponse<Category>) => {
+          const transformedCategories = response.data?.map(category => ({
             ...category,
             createdAt: new Date(category.createdAt),
             updatedAt: new Date(category.updatedAt)
-          }));
-          return response;
+          })) || [];
+          
+          // Convert PaginatedResponse to PagedResult format
+          return {
+            items: transformedCategories,
+            page: response.pagination.currentPage,
+            pageSize: response.pagination.pageSize,
+            totalCount: response.pagination.totalCount,
+            totalPages: response.pagination.totalPages,
+            hasNextPage: response.pagination.hasNext,
+            hasPreviousPage: response.pagination.hasPrevious
+          };
         })
       );
   }
@@ -43,16 +54,24 @@ export class CategoryService {
       .pipe(
         map(response => ({
           ...response.data,
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          name: response.data?.name ?? '',
+          categoryType: response.data?.categoryType ?? CategoryType.Expense,
+          defaultVatRate: response.data?.defaultVatRate ?? 0,
+          isSystemCategory: response.data?.isSystemCategory ?? false,
+          isActive: response.data?.isActive ?? true,
+          sortOrder: response.data?.sortOrder ?? 0,
           createdAt: new Date(response.data?.createdAt ?? new Date()),
           updatedAt: new Date(response.data?.updatedAt ?? new Date())
-        }))
+        }) as Category)
       );
   }
 
   getCategoryHierarchy(categoryType?: string): Observable<CategoryHierarchy[]> {
     const params = categoryType ? { categoryType } : {};
     return this.apiService.get<CategoryHierarchy[]>(`${this.endpoint}/hierarchy`, params)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data || []));
   }
 
   createCategory(category: CreateCategoryDto): Observable<Category> {
@@ -60,9 +79,17 @@ export class CategoryService {
       .pipe(
         map(response => ({
           ...response.data,
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          name: response.data?.name ?? '',
+          categoryType: response.data?.categoryType ?? CategoryType.Expense,
+          defaultVatRate: response.data?.defaultVatRate ?? 0,
+          isSystemCategory: response.data?.isSystemCategory ?? false,
+          isActive: response.data?.isActive ?? true,
+          sortOrder: response.data?.sortOrder ?? 0,
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as Category)
       );
   }
 
@@ -71,20 +98,28 @@ export class CategoryService {
       .pipe(
         map(response => ({
           ...response.data,
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt)
-        }))
+          id: response.data?.id ?? '',
+          userId: response.data?.userId ?? '',
+          name: response.data?.name ?? '',
+          categoryType: response.data?.categoryType ?? CategoryType.Expense,
+          defaultVatRate: response.data?.defaultVatRate ?? 0,
+          isSystemCategory: response.data?.isSystemCategory ?? false,
+          isActive: response.data?.isActive ?? true,
+          sortOrder: response.data?.sortOrder ?? 0,
+          createdAt: new Date(response.data?.createdAt || new Date()),
+          updatedAt: new Date(response.data?.updatedAt || new Date())
+        }) as Category)
       );
   }
 
   deleteCategory(id: string): Observable<boolean> {
     return this.apiService.delete<boolean>(`${this.endpoint}/${id}`)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data ?? false));
   }
 
   suggestCategory(request: SuggestCategoryDto): Observable<CategorySuggestion[]> {
     return this.apiService.post<CategorySuggestion[]>(`${this.endpoint}/suggest`, request)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data || []));
   }
 
   getCategoryUsageStats(
@@ -97,17 +132,17 @@ export class CategoryService {
     if (endDate) params.endDate = endDate.toISOString();
     
     return this.apiService.get<CategoryUsageStats>(`${this.endpoint}/${id}/usage-stats`, params)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data as CategoryUsageStats));
   }
 
   bulkUpdateCategories(request: BulkUpdateCategoriesDto): Observable<number> {
     return this.apiService.post<number>(`${this.endpoint}/bulk-update`, request)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data ?? 0));
   }
 
   importCategories(file: File): Observable<Category[]> {
     return this.apiService.upload<Category[]>(`${this.endpoint}/import`, file)
-      .pipe(map(response => response.data));
+      .pipe(map(response => response.data || []));
   }
 
   exportCategories(categoryType?: string): Observable<Blob> {
@@ -119,6 +154,6 @@ export class CategoryService {
     return this.apiService.post<boolean>(
       `${this.endpoint}/${sourceCategoryId}/merge`, 
       { targetCategoryId }
-    ).pipe(map(response => response.data));
+    ).pipe(map(response => response.data ?? false));
   }
 }

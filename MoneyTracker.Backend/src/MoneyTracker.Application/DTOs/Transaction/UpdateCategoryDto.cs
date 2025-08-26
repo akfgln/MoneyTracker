@@ -1,6 +1,6 @@
 namespace MoneyTracker.Application.DTOs.Transaction;
 
-public class UpdateCategoryDto
+public class AssignCategoryDto
 {
     public Guid CategoryId { get; set; }
 }

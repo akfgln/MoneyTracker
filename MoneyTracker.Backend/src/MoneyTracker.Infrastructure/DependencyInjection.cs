@@ -58,6 +58,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         // Register services
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IEmailService, FileEmailService>();
         services.AddScoped<IVatCalculationService, VatCalculationService>();
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddScoped<IPdfTextExtractionService, PdfTextExtractionService>();
