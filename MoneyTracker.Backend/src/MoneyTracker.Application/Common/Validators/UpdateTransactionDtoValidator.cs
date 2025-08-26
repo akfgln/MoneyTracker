@@ -13,10 +13,10 @@ public class UpdateTransactionDtoValidator : AbstractValidator<UpdateTransaction
     {
         RuleFor(x => x.Amount)
             .GreaterThan(0)
-            .When(x => x.Amount.HasValue)
+            .When(x => x.Amount <= 0)
             .WithMessage("Der Betrag muss größer als 0 sein")
             .LessThan(1_000_000)
-            .When(x => x.Amount.HasValue)
+            .When(x => x.Amount>=100000000)
             .WithMessage("Der Betrag darf nicht größer als 1.000.000 EUR sein");
 
         RuleFor(x => x.Description)
@@ -32,10 +32,10 @@ public class UpdateTransactionDtoValidator : AbstractValidator<UpdateTransaction
 
         RuleFor(x => x.TransactionDate)
             .LessThanOrEqualTo(DateTime.Today.AddDays(1))
-            .When(x => x.TransactionDate.HasValue)
+            .When(x => x.TransactionDate == DateTime.MinValue)
             .WithMessage("Transaktionsdatum kann nicht in der Zukunft liegen")
             .GreaterThan(DateTime.Today.AddYears(-10))
-            .When(x => x.TransactionDate.HasValue)
+            .When(x => x.TransactionDate > DateTime.Now.AddYears(10))
             .WithMessage("Transaktionsdatum kann nicht mehr als 10 Jahre in der Vergangenheit liegen");
 
         RuleFor(x => x.BookingDate)
@@ -66,11 +66,6 @@ public class UpdateTransactionDtoValidator : AbstractValidator<UpdateTransaction
             .When(x => !string.IsNullOrEmpty(x.ReferenceNumber))
             .WithMessage("Referenznummer darf maximal 100 Zeichen haben");
 
-        RuleFor(x => x.PaymentMethod)
-            .MaximumLength(50)
-            .When(x => !string.IsNullOrEmpty(x.PaymentMethod))
-            .WithMessage("Zahlungsmethode darf maximal 50 Zeichen haben");
-
         RuleFor(x => x.Location)
             .MaximumLength(200)
             .When(x => !string.IsNullOrEmpty(x.Location))
@@ -89,7 +84,7 @@ public class UpdateTransactionDtoValidator : AbstractValidator<UpdateTransaction
         // Business rule: If IsRecurring is true, RecurrencePattern must be provided
         RuleFor(x => x.RecurrencePattern)
             .NotEmpty()
-            .When(x => x.IsRecurring.HasValue && x.IsRecurring.Value)
+            .When(x => x.IsRecurring)
             .WithMessage("Wiederholungsmuster ist erforderlich wenn die Transaktion wiederkehrend ist");
     }
 
@@ -99,9 +94,9 @@ public class UpdateTransactionDtoValidator : AbstractValidator<UpdateTransaction
             return true;
 
         // Check if tags are valid (alphanumeric + hyphens, max 30 chars each)
-        return tags.All(tag => 
-            !string.IsNullOrWhiteSpace(tag) && 
-            tag.Length <= 30 && 
+        return tags.All(tag =>
+            !string.IsNullOrWhiteSpace(tag) &&
+            tag.Length <= 30 &&
             tag.All(c => char.IsLetterOrDigit(c) || c == '-' || c == '_'));
     }
 }

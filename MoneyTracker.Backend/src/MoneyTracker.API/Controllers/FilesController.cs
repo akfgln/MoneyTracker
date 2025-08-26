@@ -219,14 +219,14 @@ public class FilesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var file = await _fileRepository.GetByUserIdAndFileIdAsync(userId, id);
-            
+
             if (file == null)
             {
                 return NotFound(new { message = "Datei nicht gefunden." });
             }
 
             var fileContent = await _fileStorage.GetFileAsync(file.FilePath);
-            
+
             return File(fileContent, file.ContentType, file.OriginalFileName);
         }
         catch (Exception ex)
@@ -246,7 +246,7 @@ public class FilesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var file = await _fileRepository.GetByUserIdAndFileIdAsync(userId, id);
-            
+
             if (file == null)
             {
                 return NotFound(new { message = "Datei nicht gefunden." });
@@ -254,7 +254,7 @@ public class FilesController : ControllerBase
 
             // Delete physical file
             await _fileStorage.DeleteFileAsync(file.FilePath);
-            
+
             // Mark as deleted
             _fileRepository.Delete(file);
             await _unitOfWork.SaveChangesAsync();
@@ -279,7 +279,7 @@ public class FilesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var file = await _fileRepository.GetByUserIdAndFileIdAsync(userId, id);
-            
+
             if (file == null)
             {
                 return NotFound(new { message = "Datei nicht gefunden." });
@@ -315,7 +315,7 @@ public class FilesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var file = await _fileRepository.GetByUserIdAndFileIdAsync(userId, id);
-            
+
             if (file == null)
             {
                 return NotFound(new { message = "Datei nicht gefunden." });
@@ -332,8 +332,8 @@ public class FilesController : ControllerBase
             }
 
             var result = await _fileProcessing.ImportTransactionsAsync(id, dto, userId);
-            
-            _logger.LogInformation("Import completed for file {FileId}: {Imported}/{Total} transactions", 
+
+            _logger.LogInformation("Import completed for file {FileId}: {Imported}/{Total} transactions",
                 id, result.ImportedTransactions, result.TotalTransactions);
 
             return Ok(new { data = result, message = $"{result.ImportedTransactions} Transaktionen erfolgreich importiert." });
@@ -354,15 +354,15 @@ public class FilesController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            
+
             if (pageSize > 100) pageSize = 100;
             if (page < 1) page = 1;
 
             var receipts = await _fileRepository.GetReceiptsByUserIdAsync(userId, page, pageSize);
             var totalCount = await _fileRepository.GetReceiptCountByUserIdAsync(userId);
-            
+
             var response = receipts.Select(MapToResponseDto).ToList();
-            
+
             return Ok(new
             {
                 data = response,
@@ -392,7 +392,7 @@ public class FilesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var file = await _fileRepository.GetByUserIdAndFileIdAsync(userId, id);
-            
+
             if (file == null)
             {
                 return NotFound(new { message = "Datei nicht gefunden." });
@@ -508,10 +508,10 @@ public class FilesController : ControllerBase
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                           ?? User.FindFirst("sub")?.Value
                           ?? User.FindFirst("userId")?.Value;
-
-        if (string.IsNullOrEmpty(userIdString))
+        Guid uid = Guid.Empty;
+        if (string.IsNullOrEmpty(userIdString) || Guid.TryParse(_currentUserService.UserId, out uid))
         {
-            return _currentUserService.UserId ?? Guid.Empty;
+            return uid;
         }
 
         return Guid.TryParse(userIdString, out var userId) ? userId : Guid.Empty;

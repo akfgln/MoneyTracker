@@ -1,11 +1,39 @@
 using MoneyTracker.Domain.Common;
 using MoneyTracker.Domain.Enums;
 using MoneyTracker.Domain.ValueObjects;
+using System.ComponentModel.DataAnnotations;
 
 namespace MoneyTracker.Domain.Entities;
 
 public class Transaction : BaseAuditableEntity
 {
+    public static Transaction CreateExpense(
+        Guid userId,
+        Guid accountId,
+        Guid categoryId,
+        decimal amount,
+        DateTime transactionDate,
+        string description,
+        decimal vatRate = 0.19m)
+    {
+        var transaction = new Transaction
+        {
+            UserId = userId,
+            AccountId = accountId,
+            CategoryId = categoryId,
+            Amount = Math.Round(amount, 2),
+            TransactionDate = transactionDate,
+            BookingDate = transactionDate,
+            Description = description,
+            TransactionType = TransactionType.Expense,
+            VatRate = vatRate
+        };
+
+        transaction.CalculateVatAmounts();
+        return transaction;
+    }
+
+    public DateTime Date { get; set; }
     public Guid UserId { get; set; }
     public Guid AccountId { get; set; }
     public Guid CategoryId { get; set; }
@@ -22,7 +50,7 @@ public class Transaction : BaseAuditableEntity
     public TransactionType TransactionType { get; set; }
     public string? Notes { get; set; }
     public string? ReferenceNumber { get; set; }
-    public string? PaymentMethod { get; set; }
+    public PaymentMethod? PaymentMethod { get; set; }
     public string? Location { get; set; }
     public string? Tags { get; set; }
     public bool IsRecurring { get; set; } = false;
@@ -181,21 +209,16 @@ public class Transaction : BaseAuditableEntity
 
     public string GetPaymentMethodDisplayName()
     {
-        if (string.IsNullOrEmpty(PaymentMethod)) return "Unbekannt";
+        if (!PaymentMethod.HasValue) return "";
         
-        return PaymentMethod.ToLowerInvariant() switch
+        return PaymentMethod switch
         {
-            "cash" => "Bargeld",
-            "card" => "Karte",
-            "debit" => "EC-Karte",
-            "credit" => "Kreditkarte",
-            "transfer" => "Überweisung",
-            "direct_debit" => "Lastschrift",
-            "paypal" => "PayPal",
-            "apple_pay" => "Apple Pay",
-            "google_pay" => "Google Pay",
-            "sepa" => "SEPA",
-            _ => PaymentMethod
+            Enums.PaymentMethod.Cash => "Bargeld",
+            Enums.PaymentMethod.CreditCard => "Karte",
+            Enums.PaymentMethod.DebitCard => "EC-Karte",
+            Enums.PaymentMethod.BankTransfer => "Überweisung",
+            Enums.PaymentMethod.PayPal => "PayPal",
+            _ => "Unbekannt"
         };
     }
 
@@ -267,29 +290,23 @@ public class Transaction : BaseAuditableEntity
         return transaction;
     }
 
-    public static Transaction CreateExpense(
-        Guid userId, 
-        Guid accountId, 
-        Guid categoryId, 
-        decimal amount, 
-        DateTime transactionDate, 
-        string description,
-        decimal vatRate = 0.19m)
+    public TransactionType Type { get; set; }
+    public string? InvoiceNumber { get; set; }
+    public string? Supplier { get; set; }
+    public virtual ICollection<UploadedFile> Attachments { get; set; } = new List<UploadedFile>();
+
+    // Computed properties
+    public bool HasVat => VatRate > 0;
+
+    public void UpdateVatAmount()
     {
-        var transaction = new Transaction
+        if (VatRate > 0)
         {
-            UserId = userId,
-            AccountId = accountId,
-            CategoryId = categoryId,
-            Amount = Math.Round(amount, 2),
-            TransactionDate = transactionDate,
-            BookingDate = transactionDate,
-            Description = description,
-            TransactionType = TransactionType.Expense,
-            VatRate = vatRate
-        };
-        
-        transaction.CalculateVatAmounts();
-        return transaction;
+            VatAmount = Math.Round(Amount * VatRate / (1 + VatRate), 2);
+        }
+        else
+        {
+            VatAmount = 0;
+        }
     }
 }

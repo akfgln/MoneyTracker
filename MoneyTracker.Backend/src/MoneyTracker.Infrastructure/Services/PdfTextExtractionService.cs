@@ -93,13 +93,13 @@ public class PdfTextExtractionService : IPdfTextExtractionService
                 NumberOfPages = document.NumberOfPages,
                 Title = info.Title,
                 Author = info.Author,
-                CreationDate = info.CreationDate,
+                CreationDate = DateTime.Parse(info.CreationDate),
                 Creator = info.Creator,
                 Subject = info.Subject,
                 Keywords = info.Keywords,
                 FileSize = pdfBytes.Length,
                 PdfVersion = document.Version.ToString(),
-                IsEncrypted = document.Structure.CrossReferenceTable.Dictionary.ContainsKey("Encrypt"),
+                IsEncrypted = document.IsEncrypted,
                 HasDigitalSignature = HasDigitalSignatures(document)
             };
         }
@@ -115,7 +115,7 @@ public class PdfTextExtractionService : IPdfTextExtractionService
         try
         {
             using var document = PdfDocument.Open(pdfBytes);
-            return document.Structure.CrossReferenceTable.Dictionary.ContainsKey("Encrypt");
+            return document.IsEncrypted;
         }
         catch (Exception ex)
         {

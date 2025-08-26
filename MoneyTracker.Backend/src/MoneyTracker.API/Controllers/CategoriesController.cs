@@ -35,10 +35,10 @@ public class CategoriesController : ControllerBase
         try
         {
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var result = await _categoryService.GetCategoriesAsync(userId.Value, parameters);
+            var result = await _categoryService.GetCategoriesAsync(Guid.Parse(userId), parameters);
             return Ok(result);
         }
         catch (Exception ex)
@@ -57,10 +57,10 @@ public class CategoriesController : ControllerBase
         try
         {
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var category = await _categoryService.GetCategoryByIdAsync(userId.Value, id);
+            var category = await _categoryService.GetCategoryByIdAsync(Guid.Parse(userId), id);
             if (category == null)
                 return NotFound($"Category with ID {id} not found");
 
@@ -85,10 +85,10 @@ public class CategoriesController : ControllerBase
                 return BadRequest(ModelState);
 
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var category = await _categoryService.CreateCategoryAsync(userId.Value, dto);
+            var category = await _categoryService.CreateCategoryAsync(Guid.Parse(userId), dto);
             return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
         }
         catch (ArgumentException ex)
@@ -120,10 +120,10 @@ public class CategoriesController : ControllerBase
                 return BadRequest(ModelState);
 
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var category = await _categoryService.UpdateCategoryAsync(userId.Value, id, dto);
+            var category = await _categoryService.UpdateCategoryAsync(Guid.Parse(userId), id, dto);
             if (category == null)
                 return NotFound($"Category with ID {id} not found");
 
@@ -155,10 +155,10 @@ public class CategoriesController : ControllerBase
         try
         {
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var deleted = await _categoryService.DeleteCategoryAsync(userId.Value, id);
+            var deleted = await _categoryService.DeleteCategoryAsync(Guid.Parse(userId), id);
             if (!deleted)
                 return NotFound($"Category with ID {id} not found");
 
@@ -190,10 +190,10 @@ public class CategoriesController : ControllerBase
         try
         {
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var hierarchy = await _categoryService.GetCategoryHierarchyAsync(userId.Value, categoryType);
+            var hierarchy = await _categoryService.GetCategoryHierarchyAsync(Guid.Parse(userId), categoryType);
             return Ok(hierarchy);
         }
         catch (Exception ex)
@@ -233,10 +233,10 @@ public class CategoriesController : ControllerBase
         try
         {
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var stats = await _categoryService.GetCategoryUsageStatsAsync(userId.Value, id, startDate, endDate);
+            var stats = await _categoryService.GetCategoryUsageStatsAsync(Guid.Parse(userId), id, startDate, endDate);
             return Ok(stats);
         }
         catch (ArgumentException ex)
@@ -268,10 +268,10 @@ public class CategoriesController : ControllerBase
                 return BadRequest(ModelState);
 
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var success = await _categoryService.BulkUpdateCategoriesAsync(userId.Value, dto);
+            var success = await _categoryService.BulkUpdateCategoriesAsync(Guid.Parse(userId), dto);
             if (!success)
                 return BadRequest("No categories were updated");
 
@@ -301,13 +301,13 @@ public class CategoriesController : ControllerBase
                 return BadRequest(ModelState);
 
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var importedCategories = await _categoryService.ImportCategoriesAsync(userId.Value, dto);
-            return Ok(new 
-            { 
-                Message = "Categories imported successfully", 
+            var importedCategories = await _categoryService.ImportCategoriesAsync(Guid.Parse(userId), dto);
+            return Ok(new
+            {
+                Message = "Categories imported successfully",
                 ImportedCount = importedCategories.Count,
                 Categories = importedCategories
             });
@@ -328,15 +328,15 @@ public class CategoriesController : ControllerBase
         try
         {
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var exportData = await _categoryService.ExportCategoriesAsync(userId.Value, categoryType);
-            
-            var fileName = categoryType.HasValue 
+            var exportData = await _categoryService.ExportCategoriesAsync(Guid.Parse(userId), categoryType);
+
+            var fileName = categoryType.HasValue
                 ? $"categories_{categoryType.Value}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json"
                 : $"categories_all_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
-                
+
             return File(exportData, "application/json", fileName);
         }
         catch (Exception ex)
@@ -358,10 +358,10 @@ public class CategoriesController : ControllerBase
                 return BadRequest(ModelState);
 
             var userId = _currentUserService.UserId;
-            if (!userId.HasValue)
+            if (string.IsNullOrEmpty(userId) || (Guid.TryParse(userId, out Guid uid) && uid != Guid.Empty))
                 return Unauthorized("User not authenticated");
 
-            var success = await _categoryService.MergeCategoriesAsync(userId.Value, id, dto.TargetCategoryId);
+            var success = await _categoryService.MergeCategoriesAsync(Guid.Parse(userId), id, dto.TargetCategoryId);
             if (!success)
                 return BadRequest("Failed to merge categories");
 

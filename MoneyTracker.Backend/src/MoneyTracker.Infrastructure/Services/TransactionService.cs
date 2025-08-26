@@ -8,7 +8,7 @@ using MoneyTracker.Domain.Entities;
 using MoneyTracker.Domain.Enums;
 using System.Globalization;
 
-namespace MoneyTracker.Application.Services;
+namespace MoneyTracker.Infrastructure.Services;
 
 public class TransactionService : ITransactionService
 {
@@ -105,11 +105,11 @@ public class TransactionService : ITransactionService
 
     public async Task<PagedResult<TransactionResponseDto>> GetTransactionsAsync(Guid userId, TransactionQueryParameters parameters, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Getting transactions for user {UserId} with parameters: Page={Page}, PageSize={PageSize}", 
+        _logger.LogInformation("Getting transactions for user {UserId} with parameters: Page={Page}, PageSize={PageSize}",
             userId, parameters.Page, parameters.PageSize);
 
         var query = await BuildTransactionQueryAsync(userId, parameters, cancellationToken);
-        
+
         var totalCount = query.Count();
         var transactions = query
             .Skip((parameters.Page - 1) * parameters.PageSize)
@@ -128,7 +128,7 @@ public class TransactionService : ITransactionService
     public async Task<TransactionResponseDto?> GetTransactionByIdAsync(Guid userId, Guid transactionId, CancellationToken cancellationToken = default)
     {
         var transaction = await _transactionRepository.GetByIdAsync(transactionId, cancellationToken);
-        
+
         if (transaction == null || transaction.UserId != userId)
         {
             _logger.LogWarning("Transaction {TransactionId} not found or not accessible by user {UserId}", transactionId, userId);
@@ -143,7 +143,7 @@ public class TransactionService : ITransactionService
         _logger.LogInformation("Updating transaction {TransactionId} for user {UserId}", transactionId, userId);
 
         var transaction = await _transactionRepository.GetByIdAsync(transactionId, cancellationToken);
-        
+
         if (transaction == null || transaction.UserId != userId)
         {
             _logger.LogWarning("Transaction {TransactionId} not found or not accessible by user {UserId}", transactionId, userId);
@@ -151,69 +151,62 @@ public class TransactionService : ITransactionService
         }
 
         // Update properties if provided
-        if (dto.CategoryId.HasValue)
+        if (dto.CategoryId != Guid.Empty)
         {
-            var category = await _categoryRepository.GetByIdAsync(dto.CategoryId.Value, cancellationToken);
+            var category = await _categoryRepository.GetByIdAsync(dto.CategoryId, cancellationToken);
             if (category == null)
             {
-                throw new NotFoundException(nameof(Category), dto.CategoryId.Value);
+                throw new NotFoundException(nameof(Category), dto.CategoryId);
             }
-            transaction.CategoryId = dto.CategoryId.Value;
+            transaction.CategoryId = dto.CategoryId;
         }
 
-        if (dto.Amount.HasValue)
+        if (dto.Amount > 0)
         {
             var category = await _categoryRepository.GetByIdAsync(transaction.CategoryId, cancellationToken);
             var vatRate = dto.CustomVatRate ?? category?.DefaultVatRate ?? transaction.VatRate;
-            var vatCalculation = _vatCalculationService.CalculateVat(dto.Amount.Value, vatRate, transaction.TransactionType);
-            
+            var vatCalculation = _vatCalculationService.CalculateVat(dto.Amount, vatRate, transaction.TransactionType);
+
             transaction.Amount = vatCalculation.GrossAmount;
             transaction.NetAmount = vatCalculation.NetAmount;
             transaction.VatAmount = vatCalculation.VatAmount;
             transaction.VatRate = vatRate;
         }
 
-        if (dto.TransactionDate.HasValue)
-            transaction.TransactionDate = dto.TransactionDate.Value;
-        
+        if (dto.TransactionDate != DateTime.MinValue)
+            transaction.TransactionDate = dto.TransactionDate;
+
         if (dto.BookingDate.HasValue)
             transaction.BookingDate = dto.BookingDate.Value;
-        
+
         if (dto.Description != null)
             transaction.Description = dto.Description;
-        
+
         if (dto.MerchantName != null)
             transaction.MerchantName = dto.MerchantName;
-        
+
         if (dto.Notes != null)
             transaction.Notes = dto.Notes;
-        
+
         if (dto.ReferenceNumber != null)
             transaction.ReferenceNumber = dto.ReferenceNumber;
-        
+
         if (dto.PaymentMethod != null)
             transaction.PaymentMethod = dto.PaymentMethod;
-        
+
         if (dto.Location != null)
             transaction.Location = dto.Location;
-        
+
         if (dto.Tags != null)
             transaction.TagsList = dto.Tags;
-        
-        if (dto.IsRecurring.HasValue)
-            transaction.IsRecurring = dto.IsRecurring.Value;
-        
+
+        if (dto.IsRecurring)
+            transaction.IsRecurring = dto.IsRecurring;
+
         if (dto.RecurrencePattern != null)
             transaction.RecurrencePattern = dto.RecurrencePattern;
-        
-        if (dto.IsVerified.HasValue && dto.IsVerified.Value)
-        {
-            transaction.Verify(_currentUserService.UserId?.ToString() ?? "System");
-        }
-        else if (dto.IsVerified.HasValue && !dto.IsVerified.Value)
-        {
-            transaction.Unverify();
-        }
+
+
 
         _transactionRepository.Update(transaction);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -228,7 +221,7 @@ public class TransactionService : ITransactionService
         _logger.LogInformation("Deleting transaction {TransactionId} for user {UserId}", transactionId, userId);
 
         var transaction = await _transactionRepository.GetByIdAsync(transactionId, cancellationToken);
-        
+
         if (transaction == null || transaction.UserId != userId)
         {
             _logger.LogWarning("Transaction {TransactionId} not found or not accessible by user {UserId}", transactionId, userId);
@@ -280,8 +273,8 @@ public class TransactionService : ITransactionService
         if (!string.IsNullOrWhiteSpace(searchDto.MerchantName))
             query = query.Where(t => t.MerchantName != null && t.MerchantName.ToLowerInvariant().Contains(searchDto.MerchantName.ToLowerInvariant()));
 
-        if (!string.IsNullOrWhiteSpace(searchDto.PaymentMethod))
-            query = query.Where(t => t.PaymentMethod != null && t.PaymentMethod.ToLowerInvariant().Contains(searchDto.PaymentMethod.ToLowerInvariant()));
+        if (searchDto.PaymentMethod.HasValue)
+            query = query.Where(t => t.PaymentMethod != null && t.PaymentMethod == searchDto.PaymentMethod);
 
         if (searchDto.Tags?.Any() == true)
             query = query.Where(t => searchDto.Tags.Any(tag => t.HasTag(tag)));
@@ -312,7 +305,7 @@ public class TransactionService : ITransactionService
         _logger.LogInformation("Bulk updating {Count} transactions for user {UserId}", dto.TransactionIds.Count, userId);
 
         var transactions = new List<Transaction>();
-        
+
         foreach (var transactionId in dto.TransactionIds)
         {
             var transaction = await _transactionRepository.GetByIdAsync(transactionId, cancellationToken);
@@ -417,12 +410,12 @@ public class TransactionService : ITransactionService
             query = query.Where(t => t.TransactionType == parameters.TransactionType.Value);
 
         var filteredTransactions = query.ToList();
-        
+
         // Calculate summary statistics
         var totalIncome = filteredTransactions.Where(t => t.TransactionType == TransactionType.Income).Sum(t => t.Amount);
         var totalExpenses = filteredTransactions.Where(t => t.TransactionType == TransactionType.Expense).Sum(t => t.Amount);
         var netAmount = totalIncome - totalExpenses;
-        
+
         var summary = new TransactionSummaryDto
         {
             TotalIncome = totalIncome,
@@ -471,7 +464,7 @@ public class TransactionService : ITransactionService
         _logger.LogInformation("Duplicating transaction {TransactionId} for user {UserId}", transactionId, userId);
 
         var originalTransaction = await _transactionRepository.GetByIdAsync(transactionId, cancellationToken);
-        
+
         if (originalTransaction == null || originalTransaction.UserId != userId)
         {
             _logger.LogWarning("Transaction {TransactionId} not found or not accessible by user {UserId}", transactionId, userId);
@@ -513,7 +506,7 @@ public class TransactionService : ITransactionService
     public async Task<bool> UpdateTransactionCategoryAsync(Guid userId, Guid transactionId, Guid categoryId, CancellationToken cancellationToken = default)
     {
         var transaction = await _transactionRepository.GetByIdAsync(transactionId, cancellationToken);
-        
+
         if (transaction == null || transaction.UserId != userId)
         {
             return false;
@@ -526,7 +519,7 @@ public class TransactionService : ITransactionService
         }
 
         transaction.CategoryId = categoryId;
-        
+
         // Recalculate VAT with new category's default rate
         var vatCalculation = _vatCalculationService.CalculateVat(transaction.Amount, category.DefaultVatRate, transaction.TransactionType);
         transaction.NetAmount = vatCalculation.NetAmount;
@@ -542,7 +535,7 @@ public class TransactionService : ITransactionService
     public async Task<List<TransactionResponseDto>> GetRecentTransactionsAsync(Guid userId, int count = 10, CancellationToken cancellationToken = default)
     {
         var transactions = await _transactionRepository.GetRecentByUserIdAsync(userId, count, cancellationToken);
-        
+
         var dtos = new List<TransactionResponseDto>();
         foreach (var transaction in transactions)
         {
@@ -555,14 +548,14 @@ public class TransactionService : ITransactionService
     public async Task<bool> VerifyTransactionAsync(Guid userId, Guid transactionId, string verifiedBy, CancellationToken cancellationToken = default)
     {
         var transaction = await _transactionRepository.GetByIdAsync(transactionId, cancellationToken);
-        
+
         if (transaction == null || transaction.UserId != userId)
         {
             return false;
         }
 
         transaction.Verify(verifiedBy);
-        
+
         _transactionRepository.Update(transaction);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -572,14 +565,14 @@ public class TransactionService : ITransactionService
     public async Task<bool> ProcessPendingTransactionAsync(Guid userId, Guid transactionId, CancellationToken cancellationToken = default)
     {
         var transaction = await _transactionRepository.GetByIdAsync(transactionId, cancellationToken);
-        
+
         if (transaction == null || transaction.UserId != userId)
         {
             return false;
         }
 
         transaction.Process();
-        
+
         _transactionRepository.Update(transaction);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -623,8 +616,8 @@ public class TransactionService : ITransactionService
         if (!string.IsNullOrWhiteSpace(parameters.MerchantName))
             query = query.Where(t => t.MerchantName != null && t.MerchantName.ToLowerInvariant().Contains(parameters.MerchantName.ToLowerInvariant()));
 
-        if (!string.IsNullOrWhiteSpace(parameters.PaymentMethod))
-            query = query.Where(t => t.PaymentMethod != null && t.PaymentMethod.ToLowerInvariant().Contains(parameters.PaymentMethod.ToLowerInvariant()));
+        if (parameters.PaymentMethod.HasValue)
+            query = query.Where(t => t.PaymentMethod != null && t.PaymentMethod == parameters.PaymentMethod);
 
         if (parameters.IsVerified.HasValue)
             query = query.Where(t => t.IsVerified == parameters.IsVerified.Value);
@@ -644,20 +637,20 @@ public class TransactionService : ITransactionService
         // Apply sorting
         query = parameters.SortBy?.ToLower() switch
         {
-            "amount" => parameters.SortDirection?.ToLower() == "asc" 
-                ? query.OrderBy(t => t.Amount) 
+            "amount" => parameters.SortDirection?.ToLower() == "asc"
+                ? query.OrderBy(t => t.Amount)
                 : query.OrderByDescending(t => t.Amount),
-            "description" => parameters.SortDirection?.ToLower() == "asc" 
-                ? query.OrderBy(t => t.Description) 
+            "description" => parameters.SortDirection?.ToLower() == "asc"
+                ? query.OrderBy(t => t.Description)
                 : query.OrderByDescending(t => t.Description),
-            "merchantname" => parameters.SortDirection?.ToLower() == "asc" 
-                ? query.OrderBy(t => t.MerchantName) 
+            "merchantname" => parameters.SortDirection?.ToLower() == "asc"
+                ? query.OrderBy(t => t.MerchantName)
                 : query.OrderByDescending(t => t.MerchantName),
-            "bookingdate" => parameters.SortDirection?.ToLower() == "asc" 
-                ? query.OrderBy(t => t.BookingDate) 
+            "bookingdate" => parameters.SortDirection?.ToLower() == "asc"
+                ? query.OrderBy(t => t.BookingDate)
                 : query.OrderByDescending(t => t.BookingDate),
-            _ => parameters.SortDirection?.ToLower() == "asc" 
-                ? query.OrderBy(t => t.TransactionDate) 
+            _ => parameters.SortDirection?.ToLower() == "asc"
+                ? query.OrderBy(t => t.TransactionDate)
                 : query.OrderByDescending(t => t.TransactionDate)
         };
 
@@ -693,7 +686,7 @@ public class TransactionService : ITransactionService
             TransactionTypeDisplay = transaction.GetTransactionTypeDisplayName(),
             Notes = transaction.Notes,
             ReferenceNumber = transaction.ReferenceNumber,
-            PaymentMethod = transaction.PaymentMethod,
+            PaymentMethod = transaction.PaymentMethod.GetValueOrDefault(),
             PaymentMethodDisplay = transaction.GetPaymentMethodDisplayName(),
             Location = transaction.Location,
             Tags = transaction.TagsList,
@@ -731,7 +724,7 @@ public class TransactionService : ITransactionService
         {
             var category = await _categoryRepository.GetByIdAsync(group.Key, cancellationToken);
             var categoryTotal = group.Sum(t => Math.Abs(t.Amount));
-            
+
             summaries.Add(new CategorySummaryDto
             {
                 CategoryId = group.Key,
@@ -756,10 +749,10 @@ public class TransactionService : ITransactionService
             var account = await _accountRepository.GetByIdAsync(group.Key, cancellationToken);
             var incomeTransactions = group.Where(t => t.TransactionType == TransactionType.Income);
             var expenseTransactions = group.Where(t => t.TransactionType == TransactionType.Expense);
-            
+
             var totalIncome = incomeTransactions.Sum(t => t.Amount);
             var totalExpenses = expenseTransactions.Sum(t => t.Amount);
-            
+
             summaries.Add(new AccountSummaryDto
             {
                 AccountId = group.Key,
@@ -783,10 +776,10 @@ public class TransactionService : ITransactionService
         {
             var incomeTransactions = group.Where(t => t.TransactionType == TransactionType.Income);
             var expenseTransactions = group.Where(t => t.TransactionType == TransactionType.Expense);
-            
+
             var totalIncome = incomeTransactions.Sum(t => t.Amount);
             var totalExpenses = expenseTransactions.Sum(t => t.Amount);
-            
+
             summaries.Add(new MonthlySummaryDto
             {
                 Year = group.Key.Year,
@@ -800,5 +793,133 @@ public class TransactionService : ITransactionService
         }
 
         return summaries.OrderBy(s => s.Year).ThenBy(s => s.Month).ToList();
+    }
+
+
+    public async Task<PaginatedResult<TransactionDto>> GetTransactionsAsync(Guid userId, TransactionQueryParameters parameters)
+    {
+        _logger.LogInformation("Getting transactions for user {UserId} with parameters: {@Parameters}", userId, parameters);
+
+        var result = await _transactionRepository.GetPagedAsync(page: parameters.Page, pageSize: parameters.PageSize, t => t.UserId == userId, t => t.Date, ascending: parameters.SortDirection == "asc");
+        var dtos = _mapper.Map<List<TransactionDto>>(result.Items);
+
+        return PaginatedResult<TransactionDto>.Create(
+            dtos,
+            parameters.Page,
+            parameters.PageSize,
+            result.TotalCount);
+    }
+
+    public async Task<TransactionDto?> GetTransactionByIdAsync(Guid userId, Guid transactionId)
+    {
+        var transaction = await _transactionRepository.GetByIdAsync(transactionId);
+        return transaction != null ? _mapper.Map<TransactionDto>(transaction) : null;
+    }
+
+    public async Task<TransactionDto> CreateTransactionAsync(Guid userId, CreateTransactionDto dto)
+    {
+        _logger.LogInformation("Creating transaction for user {UserId}: {@Transaction}", userId, dto);
+
+        // Validate category exists and belongs to user
+        var category = await _categoryRepository.GetByIdAsync(dto.CategoryId);
+        if (category == null)
+            throw new ValidationException("Kategorie nicht gefunden");
+
+        var transaction = _mapper.Map<Transaction>(dto);
+        transaction.UserId = userId;
+        transaction.Id = Guid.NewGuid();
+
+        // Calculate VAT amount if VAT rate is provided
+        if (dto.VatRate.HasValue && dto.VatRate > 0)
+        {
+            transaction.VatAmount = Math.Round(dto.Amount * dto.VatRate.Value / (1 + dto.VatRate.Value), 2);
+        }
+
+        var createdTransaction = await _transactionRepository.AddAsync(transaction);
+        return _mapper.Map<TransactionDto>(createdTransaction);
+    }
+
+    public async Task<TransactionDto?> UpdateTransactionAsync(Guid userId, UpdateTransactionDto dto)
+    {
+        _logger.LogInformation("Updating transaction {TransactionId} for user {UserId}", dto.Id, userId);
+
+        var existingTransaction = await _transactionRepository.GetByIdAsync(dto.Id);
+        if (existingTransaction == null)
+            return null;
+
+        // Validate category exists and belongs to user
+        var category = await _categoryRepository.GetByIdAsync(dto.CategoryId);
+        if (category == null)
+            throw new ValidationException("Kategorie nicht gefunden");
+
+        _mapper.Map(dto, existingTransaction);
+
+        // Recalculate VAT amount
+        if (dto.VatRate.HasValue && dto.VatRate > 0)
+        {
+            existingTransaction.VatAmount = Math.Round(dto.Amount * dto.VatRate.Value / (1 + dto.VatRate.Value), 2);
+        }
+        else
+        {
+            existingTransaction.VatAmount = 0;
+        }
+        _transactionRepository.Update(existingTransaction);
+        return _mapper.Map<TransactionDto>(existingTransaction);
+    }
+
+    public async Task<bool> DeleteTransactionAsync(Guid userId, Guid transactionId)
+    {
+        _logger.LogInformation("Deleting transaction {TransactionId} for user {UserId}", transactionId, userId);
+        await _transactionRepository.DeleteByIdAsync(transactionId);
+        return true;
+    }
+
+    public async Task<TransactionSummaryDto> GetTransactionSummaryAsync(Guid userId, DateTime? fromDate, DateTime? toDate)
+    {
+        var summaryData = await _transactionRepository.GetSummaryDataAsync(userId, fromDate, toDate);
+        return _mapper.Map<TransactionSummaryDto>(summaryData);
+    }
+
+    public async Task<BulkOperationResultDto> BulkDeleteTransactionsAsync(Guid userId, List<Guid> transactionIds)
+    {
+        _logger.LogInformation("Bulk deleting {Count} transactions for user {UserId}", transactionIds.Count, userId);
+
+        var result = new BulkOperationResultDto
+        {
+            TotalCount = transactionIds.Count
+        };
+
+        try
+        {
+            var successCount = await _transactionRepository.BulkDeleteAsync(userId, transactionIds);
+            result.SuccessCount = successCount;
+
+            if (successCount < transactionIds.Count)
+            {
+                result.Errors.Add($"{transactionIds.Count - successCount} Transaktionen konnten nicht gelöscht werden");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during bulk delete operation");
+            result.SuccessCount = 0;
+            result.Errors.Add("Fehler beim Löschen der Transaktionen");
+        }
+
+        return result;
+    }
+
+    public async Task<List<TransactionDto>> GetRecentTransactionsAsync(Guid userId, int count = 10)
+    {
+        var parameters = new TransactionQueryParameters
+        {
+            Page = 1,
+            PageSize = count,
+            SortBy = "Date",
+            SortDirection = "desc"
+        };
+
+        var result = await _transactionRepository.GetPagedAsync(page: parameters.Page, pageSize: parameters.PageSize, t => t.UserId == userId, t => t.Date, ascending: parameters.SortDirection == "asc");
+        return _mapper.Map<List<TransactionDto>>(result.Items);
     }
 }

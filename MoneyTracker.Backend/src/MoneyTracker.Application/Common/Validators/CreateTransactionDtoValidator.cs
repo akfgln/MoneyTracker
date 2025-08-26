@@ -79,11 +79,6 @@ public class CreateTransactionDtoValidator : AbstractValidator<CreateTransaction
             .When(x => !string.IsNullOrEmpty(x.ReferenceNumber))
             .WithMessage("Referenznummer darf maximal 100 Zeichen haben");
 
-        RuleFor(x => x.PaymentMethod)
-            .MaximumLength(50)
-            .When(x => !string.IsNullOrEmpty(x.PaymentMethod))
-            .WithMessage("Zahlungsmethode darf maximal 50 Zeichen haben");
-
         RuleFor(x => x.Location)
             .MaximumLength(200)
             .When(x => !string.IsNullOrEmpty(x.Location))

@@ -18,3 +18,14 @@ public enum FileStatus
     Imported = 5,
     VirusDetected = 6
 }
+
+public enum PaymentMethod
+{
+    Cash = 1,
+    BankTransfer = 2,
+    CreditCard = 3,
+    DebitCard = 4,
+    PayPal = 5,
+    Check = 6,
+    Other = 99
+}

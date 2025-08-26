@@ -112,7 +112,6 @@ export class TransactionService {
     this.loadCategories();
   }
   
-  // Transaction CRUD Operations
   
   /**
    * Get transactions with filtering and pagination

@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MoneyTracker.Application.Common.Interfaces;
-using MoneyTracker.Application.Services;
 using MoneyTracker.Domain.Enums;
 using MoneyTracker.Infrastructure.Persistence;
 using MoneyTracker.Infrastructure.Services;

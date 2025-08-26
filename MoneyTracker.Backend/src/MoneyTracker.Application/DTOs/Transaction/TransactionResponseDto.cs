@@ -26,7 +26,7 @@ public class TransactionResponseDto
     public string TransactionTypeDisplay { get; set; } = string.Empty;
     public string? Notes { get; set; }
     public string? ReferenceNumber { get; set; }
-    public string? PaymentMethod { get; set; }
+    public PaymentMethod PaymentMethod { get; set; }
     public string? PaymentMethodDisplay { get; set; }
     public string? Location { get; set; }
     public List<string> Tags { get; set; } = new();

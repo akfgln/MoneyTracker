@@ -13,7 +13,7 @@ public class TransactionSearchDto
     public decimal? MaxAmount { get; set; }
     public TransactionType? TransactionType { get; set; }
     public string? MerchantName { get; set; }
-    public string? PaymentMethod { get; set; }
+    public PaymentMethod? PaymentMethod { get; set; }
     public List<string>? Tags { get; set; }
     public bool? IsVerified { get; set; }
     public bool? IsPending { get; set; }

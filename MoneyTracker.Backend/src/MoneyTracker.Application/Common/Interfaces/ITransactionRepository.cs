@@ -1,3 +1,4 @@
+using MoneyTracker.Application.DTOs.Transaction;
 using MoneyTracker.Domain.Entities;
 using MoneyTracker.Domain.Enums;
 
@@ -27,7 +28,7 @@ public interface ITransactionRepository : IRepository<Transaction>
     Task<IEnumerable<Transaction>> SearchTransactionsAsync(Guid userId, string searchTerm, CancellationToken cancellationToken = default);
     Task<IEnumerable<Transaction>> GetByMerchantNameAsync(string merchantName, CancellationToken cancellationToken = default);
     Task<IEnumerable<Transaction>> GetByTagAsync(string tag, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Transaction>> GetByPaymentMethodAsync(string paymentMethod, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Transaction>> GetByPaymentMethodAsync(PaymentMethod paymentMethod, CancellationToken cancellationToken = default);
     
     // Status-based queries
     Task<IEnumerable<Transaction>> GetPendingTransactionsAsync(CancellationToken cancellationToken = default);
@@ -66,4 +67,9 @@ public interface ITransactionRepository : IRepository<Transaction>
     Task<IEnumerable<Transaction>> BulkUpdateCategoryAsync(Guid oldCategoryId, Guid newCategoryId, CancellationToken cancellationToken = default);
     Task<int> BulkDeleteByAccountIdAsync(Guid accountId, CancellationToken cancellationToken = default);
     Task<int> BulkProcessPendingTransactionsAsync(CancellationToken cancellationToken = default);
+    
+    Task<List<Transaction>> GetByIdsAsync(Guid userId, List<Guid> transactionIds);
+    Task<int> BulkDeleteAsync(Guid userId, List<Guid> transactionIds);
+    Task<TransactionSummaryDto> GetSummaryDataAsync(Guid userId, DateTime? fromDate, DateTime? toDate);
+    Task<bool> ExistsAsync(Guid userId, Guid transactionId);
 }

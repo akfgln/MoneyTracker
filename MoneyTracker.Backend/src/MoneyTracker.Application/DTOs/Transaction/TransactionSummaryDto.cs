@@ -18,6 +18,18 @@ public class TransactionSummaryDto
     public List<AccountSummaryDto> AccountSummaries { get; set; } = new();
     public List<MonthlySummaryDto> MonthlySummaries { get; set; } = new();
     public VatSummaryDto VatSummary { get; set; } = new();
+     
+    public decimal TotalVat { get; set; }
+    public int TotalTransactionCount { get; set; }
+    public int IncomeTransactionCount { get; set; }
+    public int ExpenseTransactionCount { get; set; }
+    public DateTime? FirstTransactionDate { get; set; }
+    public DateTime? LastTransactionDate { get; set; }
+
+    // German formatted properties
+    public string TotalIncomeFormatted => TotalIncome.ToString("C", new System.Globalization.CultureInfo("de-DE"));
+    public string TotalExpensesFormatted => TotalExpenses.ToString("C", new System.Globalization.CultureInfo("de-DE"));
+    public string NetAmountFormatted => NetAmount.ToString("C", new System.Globalization.CultureInfo("de-DE"));
 }
 
 public class CategorySummaryDto
@@ -69,4 +81,13 @@ public class VatRateSummaryDto
     public decimal VatAmount { get; set; }
     public decimal GrossAmount { get; set; }
     public int TransactionCount { get; set; }
+}
+public class BulkOperationResultDto
+{
+    public int TotalCount { get; set; }
+    public int SuccessCount { get; set; }
+    public int FailureCount => TotalCount - SuccessCount;
+    public List<string> Errors { get; set; } = new();
+    public bool IsFullySuccessful => SuccessCount == TotalCount;
+    public decimal SuccessRate => TotalCount > 0 ? (decimal)SuccessCount / TotalCount * 100 : 0;
 }

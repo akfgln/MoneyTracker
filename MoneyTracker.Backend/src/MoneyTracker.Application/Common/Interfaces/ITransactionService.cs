@@ -18,4 +18,13 @@ public interface ITransactionService
     Task<List<TransactionResponseDto>> GetRecentTransactionsAsync(Guid userId, int count = 10, CancellationToken cancellationToken = default);
     Task<bool> VerifyTransactionAsync(Guid userId, Guid transactionId, string verifiedBy, CancellationToken cancellationToken = default);
     Task<bool> ProcessPendingTransactionAsync(Guid userId, Guid transactionId, CancellationToken cancellationToken = default);
+
+    Task<PaginatedResult<TransactionDto>> GetTransactionsAsync(Guid userId, TransactionQueryParameters parameters);
+    Task<TransactionDto?> GetTransactionByIdAsync(Guid userId, Guid transactionId);
+    Task<TransactionDto> CreateTransactionAsync(Guid userId, CreateTransactionDto dto);
+    Task<TransactionDto?> UpdateTransactionAsync(Guid userId, UpdateTransactionDto dto);
+    Task<bool> DeleteTransactionAsync(Guid userId, Guid transactionId);
+    Task<TransactionSummaryDto> GetTransactionSummaryAsync(Guid userId, DateTime? fromDate, DateTime? toDate);
+    Task<BulkOperationResultDto> BulkDeleteTransactionsAsync(Guid userId, List<Guid> transactionIds);
+    Task<List<TransactionDto>> GetRecentTransactionsAsync(Guid userId, int count = 10);
 }
